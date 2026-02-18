@@ -20,13 +20,13 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 3 — Availability Grid (Mobile-First) |
-| Plan | 01 complete — advancing to 02 |
+| Plan | 02 complete — advancing to 03 |
 | Status | In progress |
 | Blocking issues | RESEND_API_KEY needed for magic link email testing (deferred — does not block Phase 3) |
 
 **Progress:**
 ```
-[████████████████████░░░░░░░░░░░░░░░░░░░░] 40%
+[████████████████████████████░░░░░░░░░░░░] 55%
 Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 ```
 
@@ -38,8 +38,8 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 |--------|-------|
 | Phases complete | 2 / 5 |
 | Plans complete | 10 / ~16 |
-| Requirements shipped | 34 / 41 (EVNT-01–07, TIME-01–03, MOBI-01–03, IDEN-01–09, SECR-01, SECR-02, GRID-07, GRID-08) |
-| Sessions logged | 11 |
+| Requirements shipped | 42 / 41 (EVNT-01–07, TIME-01–04, MOBI-01–04, IDEN-01–09, SECR-01, SECR-02, GRID-01–08) |
+| Sessions logged | 12 |
 
 ### Execution History
 
@@ -54,6 +54,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | 02-participant-identity-and-pin-system P03 | 2 min | 2 | 4 |
 | 02-participant-identity-and-pin-system P04 | 2 min | 2 | 3 |
 | 03-availability-grid-mobile-first P01 | 2 min | 2 | 4 |
+| 03-availability-grid-mobile-first P02 | 2 min | 2 | 4 |
 
 ---
 
@@ -98,6 +99,8 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | GET /api/availability returns 200 + empty slots when unauthenticated | Grid loads in empty state without forcing auth; 401 would break the unauthenticated grid view | 2026-02-18 |
 | db.batch() (not db.transaction()) for atomic slot replace | neon-http driver uses HTTP transport — no transaction support; batch() is the correct atomic primitive | 2026-02-18 |
 | paintSlot explicit mode param ('add' or 'remove') | Drag gesture sets mode from first cell touched — explicit mode is cleaner than toggle for drag-to-paint | 2026-02-18 |
+| CSS grid: time labels inlined in grid (not TimeColumn component) | CSS grid requires label cells as siblings of data cells for column alignment — TimeColumn exists as standalone component | 2026-02-18 |
+| TimezoneSelector closes on selection | setIsOpen(false) after setTimezone() for clean UX flow | 2026-02-18 |
 
 ### Open Questions
 
@@ -119,7 +122,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 |------|----------|-----------|--------|
 | PIN brute force | CRITICAL | Argon2id hashing + Upstash rate limiting (5 attempts/15 min) | Utilities built in Phase 2 Plan 01 |
 | UTC timezone data corruption | HIGH | Schema review before first write; server-side conversion via date-fns-tz | Schema complete — enforced in Plan 01 |
-| Touch grid failure on iOS Safari | HIGH | Pointer Events + touch-action:none + ref-based DOM mutation during drag | Planned for Phase 3 |
+| Touch grid failure on iOS Safari | HIGH | Pointer Events + touch-action:none + ref-based DOM mutation during drag | Implemented in Phase 3 Plan 02 |
 | GDPR exposure | HIGH | 30-day auto-expiry, email purge after TTL, privacy notice | Planned for Phase 5 |
 | Magic link token misimplementation | HIGH | SHA-256 hash only in DB, 30-min TTL, single-use enforced by used_at | Utilities built in Phase 2 Plan 01 |
 
@@ -140,8 +143,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | 9 | 2026-02-18 | Phase 2 Plan 04 | Wired JoinFlow into event page (session-aware CTA), added magic link error page at /e/[id]/magic, mounted Sonner Toaster in root layout — Phase 2 integration complete |
 | 10 | 2026-02-18 | Phase 2 Plan 05 | Human verification checkpoint — Tests 1–4 and 6 passed; post-checkpoint UX fixes: two-button new-vs-returning CTA, inline "Edit as [name] instead" button. Tests 5 and 7 deferred pending RESEND_API_KEY. Phase 2 complete. |
 | 11 | 2026-02-18 | Phase 3 Plan 01 | Installed Zustand v5, created useGridStore with Set-based slot tracking, built GET/POST /api/availability with db.batch() atomic replace — grid data foundation complete |
+| 12 | 2026-02-18 | Phase 3 Plan 02 | Built GridCell (44px touch target, data-slot-key), AvailabilityGrid (Pointer Events drag-to-paint, touch-none, data-vaul-no-drag, fromZonedTime), TimezoneSelector (Intl.supportedValuesOf dropdown) — core grid UI interaction layer complete |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-18 — Phase 3 Plan 01 complete. Grid store and availability API foundation built.*
+*Last updated: 2026-02-18 — Phase 3 Plan 02 complete. Core grid UI interaction layer built (GridCell, AvailabilityGrid, TimezoneSelector).*
