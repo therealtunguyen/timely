@@ -9,8 +9,6 @@ import { magicLinkRatelimit } from '@/lib/rate-limit'
 import { Resend } from 'resend'
 import { MagicLinkEmail } from '@/emails/magic-link-email'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const requestSchema = z.object({
   eventId: z.string().min(1),
   name: z.string().min(1).max(50).trim(),
@@ -76,6 +74,7 @@ export async function POST(req: NextRequest) {
   // Send email via Resend
   // buildMagicUrl returns /api/participants/magic-link/consume?token=...&eventId=...
   const magicUrl = buildMagicUrl(rawToken, eventId)
+  const resend = new Resend(process.env.RESEND_API_KEY)
   await resend.emails.send({
     from: 'Timely <noreply@timely.app>',
     to: email,
