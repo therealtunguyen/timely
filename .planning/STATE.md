@@ -10,7 +10,7 @@
 
 **Current focus:** Phase 1 — Foundation and Event Creation
 
-**Stack:** Next.js 15 (App Router) + Neon Postgres + Drizzle ORM + Vercel + Resend + Tailwind v4 + shadcn/ui + Zustand (grid only) + Upstash Redis (rate limiting)
+**Stack:** Next.js 16 (App Router) + Neon Postgres + Drizzle ORM + Vercel + Resend + Tailwind v4 + shadcn/ui + Zustand (grid only) + Upstash Redis (rate limiting)
 
 ---
 
@@ -20,13 +20,14 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 1 — Foundation and Event Creation |
-| Plan | None started |
-| Status | Not started |
+| Plan | 01 complete — starting 02 |
+| Status | In progress |
 | Blocking issues | None |
 
 **Progress:**
 ```
-Phase 1 [ ]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
+[███░░░░░░░] 25%
+Phase 1 [1/4]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 ```
 
 ---
@@ -36,8 +37,15 @@ Phase 1 [ ]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | Metric | Value |
 |--------|-------|
 | Phases complete | 0 / 5 |
-| Requirements shipped | 0 / 41 |
-| Sessions logged | 0 |
+| Plans complete | 1 / ~16 |
+| Requirements shipped | 2 / 41 (TIME-01, MOBI-02) |
+| Sessions logged | 2 |
+
+### Execution History
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| 01-foundation-and-event-creation P01 | 7 min | 2 | 20 |
 
 ---
 
@@ -61,6 +69,9 @@ Phase 1 [ ]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | OG image: dynamic via @vercel/og | Higher click-through when shared in group chats; worth the implementation cost | 2026-02-17 |
 | Rate limiting service: Upstash Redis | Serverless-compatible, Next.js SDK exists, free tier sufficient for launch | 2026-02-17 |
 | Timezone picker: auto-detect + manual correction dropdown | Don't trust silent auto-detect; let users fix wrong detection | 2026-02-17 |
+| Manual Next.js scaffold | create-next-app refused capital-letter directory "Timely" — manual tsconfig/next.config/postcss setup used | 2026-02-18 |
+| drizzle.config.ts env loading | Loads .env.local explicitly via dotenv config({path:'.env.local'}) — dotenv/config defaults to .env only | 2026-02-18 |
+| shadcn @layer base body override | Fixed to use warm palette variables (--color-warm-bg) instead of shadcn's bg-background/text-foreground | 2026-02-18 |
 
 ### Open Questions
 
@@ -81,7 +92,7 @@ Phase 1 [ ]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | Risk | Severity | Mitigation | Status |
 |------|----------|-----------|--------|
 | PIN brute force | CRITICAL | Argon2id hashing + Upstash rate limiting (5 attempts/15 min) | Planned for Phase 2 |
-| UTC timezone data corruption | HIGH | Schema review before first write; server-side conversion via date-fns-tz | Schema in Phase 1 |
+| UTC timezone data corruption | HIGH | Schema review before first write; server-side conversion via date-fns-tz | Schema complete — enforced in Plan 01 |
 | Touch grid failure on iOS Safari | HIGH | Pointer Events + touch-action:none + ref-based DOM mutation during drag | Planned for Phase 3 |
 | GDPR exposure | HIGH | 30-day auto-expiry, email purge after TTL, privacy notice | Planned for Phase 5 |
 | Magic link token misimplementation | HIGH | SHA-256 hash only in DB, 30-min TTL, single-use enforced by used_at | Planned for Phase 2 |
@@ -93,8 +104,9 @@ Phase 1 [ ]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | Session | Date | Phase | What Happened |
 |---------|------|-------|---------------|
 | 1 | 2026-02-17 | Setup | Project initialized, requirements defined, research completed, roadmap created |
+| 2 | 2026-02-18 | Phase 1 Plan 01 | Scaffolded Next.js 16, Tailwind v4 warm palette, shadcn/ui, Drizzle schema (6 tables), pushed to Neon |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-17 after roadmap creation*
+*Last updated: 2026-02-18 — Completed 01-foundation-and-event-creation/01-01-PLAN.md*
