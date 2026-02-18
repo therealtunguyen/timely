@@ -20,13 +20,13 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 2 — Participant Identity and PIN System |
-| Plan | None started |
-| Status | Not started |
+| Plan | 02-01 complete — starting 02-02 |
+| Status | In progress |
 | Blocking issues | None |
 
 **Progress:**
 ```
-[██████████░░░░░░░░░░] 25%
+[██████░░░░] 56%
 Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 ```
 
@@ -37,9 +37,9 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | Metric | Value |
 |--------|-------|
 | Phases complete | 1 / 5 |
-| Plans complete | 4 / ~16 |
-| Requirements shipped | 11 / 41 (EVNT-01–07, TIME-01, MOBI-01, MOBI-02, MOBI-03) |
-| Sessions logged | 5 |
+| Plans complete | 5 / ~16 |
+| Requirements shipped | 17 / 41 (EVNT-01–07, TIME-01, MOBI-01–03, IDEN-05, IDEN-06, IDEN-08, IDEN-09, SECR-01, SECR-02) |
+| Sessions logged | 6 |
 
 ### Execution History
 
@@ -49,6 +49,7 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | 01-foundation-and-event-creation P02 | 2 min | 2 | 9 |
 | 01-foundation-and-event-creation P03 | 3 min | 2 | 4 |
 | 01-foundation-and-event-creation P04 | 0 min | 1 | 0 |
+| 02-participant-identity-and-pin-system P01 | 3 min | 2 | 12 |
 
 ---
 
@@ -80,18 +81,21 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | generateMetadata omits images array | Next.js file convention (opengraph-image.tsx) auto-populates og:image; manual images array creates duplicate OG tags | 2026-02-18 |
 | Neon HTTP driver is edge-compatible | drizzle-orm/neon-http uses HTTP (not WebSocket/TCP) — safe to use in Edge runtime OG image generation | 2026-02-18 |
 | Phase 1 verification checkpoint approved by human | All 8 verification steps passed — create flow, event page, mobile layout, OG image, rate limiting, UTC storage, 404 handling | 2026-02-18 |
+| serverExternalPackages for @node-rs/argon2 | Required to prevent Next.js WASM bundling error on native addon | 2026-02-18 |
+| Drizzle relations in separate relations.ts | Merged into db singleton; keeps schema.ts focused on table definitions only | 2026-02-18 |
+| buildMagicUrl routes to /api/participants/magic-link/consume | Route Handler validates token then redirects — not a UI page | 2026-02-18 |
 
 ### Open Questions
 
 | Question | Options | Status |
 |----------|---------|--------|
-| Argon2id native addon on Vercel | `argon2` npm requires native addon — verify Vercel Node.js runtime compatibility; fallback is `bcryptjs` | Unresolved — check Phase 2 |
+| Argon2id native addon on Vercel | `@node-rs/argon2` installed and configured with serverExternalPackages — verify on actual Vercel deploy | Partially resolved — will confirm at deploy |
 | Upstash free tier limits | Verify current limits cover expected verification volume before committing | Unresolved — check Phase 2 |
 | GDPR right-to-erasure mechanism | Creator token for manual deletion + 30-day auto-expiry — concrete policy needed before launch | Deferred to Phase 5 |
 
 ### Todos
 
-- [ ] Verify `argon2` npm package works on Vercel's Node.js runtime before starting Phase 2 PIN implementation
+- [x] Verify `argon2` npm package works on Vercel's Node.js runtime before starting Phase 2 PIN implementation (using @node-rs/argon2 with serverExternalPackages)
 - [ ] Confirm Upstash free tier request limits before starting Phase 2 rate limiting
 - [x] Decide on creator authentication mechanism — resolved: Route Handler with IP-based rate limiting, no session on creation
 
@@ -99,11 +103,11 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 
 | Risk | Severity | Mitigation | Status |
 |------|----------|-----------|--------|
-| PIN brute force | CRITICAL | Argon2id hashing + Upstash rate limiting (5 attempts/15 min) | Planned for Phase 2 |
+| PIN brute force | CRITICAL | Argon2id hashing + Upstash rate limiting (5 attempts/15 min) | Utilities built in Phase 2 Plan 01 |
 | UTC timezone data corruption | HIGH | Schema review before first write; server-side conversion via date-fns-tz | Schema complete — enforced in Plan 01 |
 | Touch grid failure on iOS Safari | HIGH | Pointer Events + touch-action:none + ref-based DOM mutation during drag | Planned for Phase 3 |
 | GDPR exposure | HIGH | 30-day auto-expiry, email purge after TTL, privacy notice | Planned for Phase 5 |
-| Magic link token misimplementation | HIGH | SHA-256 hash only in DB, 30-min TTL, single-use enforced by used_at | Planned for Phase 2 |
+| Magic link token misimplementation | HIGH | SHA-256 hash only in DB, 30-min TTL, single-use enforced by used_at | Utilities built in Phase 2 Plan 01 |
 
 ---
 
@@ -116,8 +120,9 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | 3 | 2026-02-18 | Phase 1 Plan 02 | POST /api/events route handler with Upstash rate limiting, Zod validation, CreateEventForm, DatePicker, /e/[id]/confirm page |
 | 4 | 2026-02-18 | Phase 1 Plan 03 | Public event page at /e/[id] with generateMetadata, skeleton loading, dynamic OG image (Edge runtime, next/og) |
 | 5 | 2026-02-18 | Phase 1 Plan 04 | Human verification checkpoint passed — all 8 steps approved. Phase 1 complete. Advancing to Phase 2. |
+| 6 | 2026-02-18 | Phase 2 Plan 01 | Phase 2 infrastructure: @node-rs/argon2, resend, react-email, motion installed; argon2/auth/magic-tokens/rate-limiters/email template built; shadcn drawer/input-otp/sonner added |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-18 — Completed 01-foundation-and-event-creation/01-04-PLAN.md — Phase 1 complete*
+*Last updated: 2026-02-18 — Completed 02-participant-identity-and-pin-system/02-01-PLAN.md*
