@@ -20,13 +20,13 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 2 — Participant Identity and PIN System |
-| Plan | 02-03 complete — starting 02-04 |
+| Plan | 02-04 complete — Phase 2 awaiting verification |
 | Status | In progress |
 | Blocking issues | None |
 
 **Progress:**
 ```
-[████████░░] 75%
+[█████████░] 89%
 Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 ```
 
@@ -37,9 +37,9 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | Metric | Value |
 |--------|-------|
 | Phases complete | 1 / 5 |
-| Plans complete | 7 / ~16 |
-| Requirements shipped | 25 / 41 (EVNT-01–07, TIME-01, MOBI-01–03, IDEN-01–09, SECR-01, SECR-02) |
-| Sessions logged | 8 |
+| Plans complete | 8 / ~16 |
+| Requirements shipped | 30 / 41 (EVNT-01–07, TIME-01, MOBI-01–03, IDEN-01–09, SECR-01, SECR-02) |
+| Sessions logged | 9 |
 
 ### Execution History
 
@@ -52,6 +52,7 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | 02-participant-identity-and-pin-system P01 | 3 min | 2 | 12 |
 | 02-participant-identity-and-pin-system P02 | 2 min | 2 | 5 |
 | 02-participant-identity-and-pin-system P03 | 2 min | 2 | 4 |
+| 02-participant-identity-and-pin-system P04 | 2 min | 2 | 3 |
 
 ---
 
@@ -91,6 +92,8 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | magic-link/request returns 200 even when participant not found | Prevents enumeration of valid participant names by timing or status code difference | 2026-02-18 |
 | InputOTP render prop not available — use InputOTPSlot index props | The installed input-otp version uses OTPInputContext for slot state; no render prop exists | 2026-02-18 |
 | Sheet orchestrator pattern for JoinFlow | JoinFlow owns all activeSheet state; child sheets are purely presentational with callback props — single drop-in for event page | 2026-02-18 |
+| Magic error page has no notFound() guard | Invalid eventId renders error UI with CTA back to /e/[id]; consume handler validates eventId before redirect | 2026-02-18 |
+| JoinFlow placed outside max-w-lg layout wrapper | Vaul drawer portals mount to document.body — placement in server component has no visual impact | 2026-02-18 |
 
 ### Open Questions
 
@@ -130,8 +133,9 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | 6 | 2026-02-18 | Phase 2 Plan 01 | Phase 2 infrastructure: @node-rs/argon2, resend, react-email, motion installed; argon2/auth/magic-tokens/rate-limiters/email template built; shadcn drawer/input-otp/sonner added |
 | 7 | 2026-02-18 | Phase 2 Plan 02 | Five participant auth Route Handlers: check-name, join, verify-pin, magic-link/request, magic-link/consume — all IDEN and SECR requirements implemented |
 | 8 | 2026-02-18 | Phase 2 Plan 03 | Four identity UI client components: JoinFlow orchestrator, NameSheet, PinSheet (shake animation, Forgot PIN reveal), MagicLinkSheet — complete two-sheet onboarding and PIN recovery flow |
+| 9 | 2026-02-18 | Phase 2 Plan 04 | Wired JoinFlow into event page (session-aware CTA), added magic link error page at /e/[id]/magic, mounted Sonner Toaster in root layout — Phase 2 integration complete |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-18 — Completed 02-participant-identity-and-pin-system/02-03-PLAN.md*
+*Last updated: 2026-02-18 — Completed 02-participant-identity-and-pin-system/02-04-PLAN.md*
