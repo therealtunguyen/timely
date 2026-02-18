@@ -20,8 +20,8 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 3 — Availability Grid (Mobile-First) |
-| Plan | None started |
-| Status | Not started |
+| Plan | 01 complete — advancing to 02 |
+| Status | In progress |
 | Blocking issues | RESEND_API_KEY needed for magic link email testing (deferred — does not block Phase 3) |
 
 **Progress:**
@@ -37,9 +37,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | Metric | Value |
 |--------|-------|
 | Phases complete | 2 / 5 |
-| Plans complete | 9 / ~16 |
-| Requirements shipped | 30 / 41 (EVNT-01–07, TIME-01, MOBI-01–03, IDEN-01–09, SECR-01, SECR-02) |
-| Sessions logged | 10 |
+| Plans complete | 10 / ~16 |
+| Requirements shipped | 34 / 41 (EVNT-01–07, TIME-01–03, MOBI-01–03, IDEN-01–09, SECR-01, SECR-02, GRID-07, GRID-08) |
+| Sessions logged | 11 |
 
 ### Execution History
 
@@ -53,6 +53,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | 02-participant-identity-and-pin-system P02 | 2 min | 2 | 5 |
 | 02-participant-identity-and-pin-system P03 | 2 min | 2 | 4 |
 | 02-participant-identity-and-pin-system P04 | 2 min | 2 | 3 |
+| 03-availability-grid-mobile-first P01 | 2 min | 2 | 4 |
 
 ---
 
@@ -94,6 +95,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | Sheet orchestrator pattern for JoinFlow | JoinFlow owns all activeSheet state; child sheets are purely presentational with callback props — single drop-in for event page | 2026-02-18 |
 | Magic error page has no notFound() guard | Invalid eventId renders error UI with CTA back to /e/[id]; consume handler validates eventId before redirect | 2026-02-18 |
 | JoinFlow placed outside max-w-lg layout wrapper | Vaul drawer portals mount to document.body — placement in server component has no visual impact | 2026-02-18 |
+| GET /api/availability returns 200 + empty slots when unauthenticated | Grid loads in empty state without forcing auth; 401 would break the unauthenticated grid view | 2026-02-18 |
+| db.batch() (not db.transaction()) for atomic slot replace | neon-http driver uses HTTP transport — no transaction support; batch() is the correct atomic primitive | 2026-02-18 |
+| paintSlot explicit mode param ('add' or 'remove') | Drag gesture sets mode from first cell touched — explicit mode is cleaner than toggle for drag-to-paint | 2026-02-18 |
 
 ### Open Questions
 
@@ -135,8 +139,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | 8 | 2026-02-18 | Phase 2 Plan 03 | Four identity UI client components: JoinFlow orchestrator, NameSheet, PinSheet (shake animation, Forgot PIN reveal), MagicLinkSheet — complete two-sheet onboarding and PIN recovery flow |
 | 9 | 2026-02-18 | Phase 2 Plan 04 | Wired JoinFlow into event page (session-aware CTA), added magic link error page at /e/[id]/magic, mounted Sonner Toaster in root layout — Phase 2 integration complete |
 | 10 | 2026-02-18 | Phase 2 Plan 05 | Human verification checkpoint — Tests 1–4 and 6 passed; post-checkpoint UX fixes: two-button new-vs-returning CTA, inline "Edit as [name] instead" button. Tests 5 and 7 deferred pending RESEND_API_KEY. Phase 2 complete. |
+| 11 | 2026-02-18 | Phase 3 Plan 01 | Installed Zustand v5, created useGridStore with Set-based slot tracking, built GET/POST /api/availability with db.batch() atomic replace — grid data foundation complete |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-18 — Phase 2 complete. Advancing to Phase 3: Availability Grid (Mobile-First)*
+*Last updated: 2026-02-18 — Phase 3 Plan 01 complete. Grid store and availability API foundation built.*
