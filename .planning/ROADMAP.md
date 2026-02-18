@@ -101,6 +101,14 @@ Plans:
 
 **Requirements:** GRID-01, GRID-02, GRID-03, GRID-04, GRID-05, GRID-06, GRID-07, GRID-08, TIME-02, TIME-03, TIME-04, MOBI-04
 
+**Plans:** 4 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Install Zustand, create grid store, build GET/POST /api/availability route handlers
+- [ ] 03-02-PLAN.md — Grid core components: GridCell, TimeColumn, AvailabilityGrid (drag-to-paint), TimezoneSelector
+- [ ] 03-03-PLAN.md — AvailabilityDrawer (vaul container, save lifecycle, timezone wiring) + wire into event page CTAs
+- [ ] 03-04-PLAN.md — Human verification checkpoint (6 test scenarios: touch drag, persistence, timezone, 14-day range, 44px targets, auto-save)
+
 **Delivers:**
 - Visual time grid: days as columns, 30-min slots as rows, scroll-based navigation
 - Touch drag-to-paint selection using Pointer Events API exclusively; `touch-action: none` on the grid container; ref-based DOM mutation during drag (no React state mid-drag)
@@ -183,7 +191,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation and Event Creation | 4/4 | Complete | 2026-02-18 |
 | 2. Participant Identity and PIN System | 5/5 | Complete | 2026-02-18 |
-| 3. Availability Grid (Mobile-First) | 0/? | Not started | - |
+| 3. Availability Grid (Mobile-First) | 0/4 | Not started | - |
 | 4. Heatmap and Results View | 0/? | Not started | - |
 | 5. Polish and Launch Readiness | 0/? | Not started | - |
 
@@ -241,4 +249,4 @@ Plans:
 ---
 
 *Roadmap created: 2026-02-17*
-*Last updated: 2026-02-18 — Phase 2 planned (5 plans)*
+*Last updated: 2026-02-18 — Phase 3 planned (4 plans)*
