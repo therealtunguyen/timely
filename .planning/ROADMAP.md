@@ -65,6 +65,15 @@ Plans:
 
 **Requirements:** IDEN-01, IDEN-02, IDEN-03, IDEN-04, IDEN-05, IDEN-06, IDEN-07, IDEN-08, IDEN-09, SECR-01, SECR-02
 
+**Plans:** 5 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Install packages, next.config.ts patch, lib utilities (argon2, auth, magic-tokens, rate-limiters), email template, shadcn components
+- [ ] 02-02-PLAN.md — API Route Handlers: claim-name, verify-pin, magic-link/request, magic-link/consume
+- [ ] 02-03-PLAN.md — Identity UI components: JoinFlow orchestrator, NameSheet, PinSheet, MagicLinkSheet
+- [ ] 02-04-PLAN.md — Wire JoinFlow into event page, add Sonner toasts, magic link error page
+- [ ] 02-05-PLAN.md — Human verification checkpoint (7 test scenarios)
+
 **Delivers:**
 - Name entry flow with per-event uniqueness check (case-insensitive)
 - 4-digit PIN entry UI (OTP-style inputs) hashed with Argon2id at `memoryCost: 65536`
@@ -172,8 +181,8 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and Event Creation | 0/4 | In progress | - |
-| 2. Participant Identity and PIN System | 0/? | Not started | - |
+| 1. Foundation and Event Creation | 4/4 | Complete | 2026-02-18 |
+| 2. Participant Identity and PIN System | 0/5 | In progress | - |
 | 3. Availability Grid (Mobile-First) | 0/? | Not started | - |
 | 4. Heatmap and Results View | 0/? | Not started | - |
 | 5. Polish and Launch Readiness | 0/? | Not started | - |
@@ -232,4 +241,4 @@ Plans:
 ---
 
 *Roadmap created: 2026-02-17*
-*Last updated: 2026-02-17 after initial creation*
+*Last updated: 2026-02-18 — Phase 2 planned (5 plans)*
