@@ -35,6 +35,7 @@ export function NameSheet({
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [takenName, setTakenName] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -61,8 +62,9 @@ export function NameSheet({
 
       if (flow === 'new') {
         if (data.status === 'exists') {
-          // Name is taken — guide them to use the returning flow instead
-          setError("That name is already taken. If it's yours, close this and tap 'Edit my availability'.")
+          // Name is taken — offer an inline button to switch to the returning flow
+          setError('That name is already taken.')
+          setTakenName(trimmed)
           setLoading(false)
           return
         }
@@ -90,6 +92,7 @@ export function NameSheet({
     if (!open) {
       setName('')
       setError(null)
+      setTakenName(null)
     }
     onOpenChange(open)
   }
@@ -132,6 +135,16 @@ export function NameSheet({
               <p id="name-error" className="text-sm text-red-600" role="alert">
                 {error}
               </p>
+            )}
+            {takenName && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-[#E5DDD4] text-[#1C1A17]"
+                onClick={() => onNameExists(takenName)}
+              >
+                Edit as {takenName} instead
+              </Button>
             )}
           </div>
 
