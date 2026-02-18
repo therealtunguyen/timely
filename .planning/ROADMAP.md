@@ -29,6 +29,14 @@
 
 **Requirements:** EVNT-01, EVNT-02, EVNT-03, EVNT-04, EVNT-05, EVNT-06, EVNT-07, TIME-01, MOBI-01, MOBI-02, MOBI-03
 
+**Plans:** 4 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Next.js 15 scaffold, Tailwind v4 warm palette, Drizzle schema + Neon wiring
+- [ ] 01-02-PLAN.md — Create-event form, POST /api/events Route Handler with rate limiting, confirmation page
+- [ ] 01-03-PLAN.md — Public event page (/e/[id]), OG image, skeleton loading state
+- [ ] 01-04-PLAN.md — End-to-end verification checkpoint
+
 **Delivers:**
 - Next.js 15 project wired to Neon Postgres via Drizzle ORM, deployed to Vercel
 - Full database schema: events, participants, availability slots, sessions, magic tokens
@@ -36,7 +44,7 @@
 - Event stored with nanoid(10) ID; all slot timestamps UTC from the start
 - Shareable `/e/[nanoid]` URL generated on creation
 - Basic event page rendering title, description, and candidate date list
-- Open Graph metadata tags + dynamic OG image via `@vercel/og` for group chat previews
+- Open Graph metadata tags + dynamic OG image via `next/og` for group chat previews
 - Rate-limited event creation endpoint (blocks spam at the source)
 - Warm minimal aesthetic applied: `#FAF8F5` background, Inter font, mobile-first layout, skeleton loading states
 
@@ -164,7 +172,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and Event Creation | 0/? | Not started | - |
+| 1. Foundation and Event Creation | 0/4 | In progress | - |
 | 2. Participant Identity and PIN System | 0/? | Not started | - |
 | 3. Availability Grid (Mobile-First) | 0/? | Not started | - |
 | 4. Heatmap and Results View | 0/? | Not started | - |
