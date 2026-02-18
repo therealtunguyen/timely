@@ -20,12 +20,12 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 4 — Availability Heatmap |
-| Plan | 04-01 complete — creator identity token shipped |
+| Plan | 04-03 complete — HeatmapGrid, BestTimeCallout, ParticipantList shipped |
 | Status | In progress |
 | Blocking issues | RESEND_API_KEY needed for magic link email testing (deferred — does not block Phase 4) |
 
 **Progress:**
-```
+[█████████░] 89%
 [████████░░] 78%
 Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 ```
@@ -40,6 +40,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 | Plans complete | 13 / ~16 |
 | Requirements shipped | 43 / 41 (EVNT-01–07, TIME-01–04, MOBI-01–04, IDEN-01–09, SECR-01, SECR-02, GRID-01–08, HEAT-06) |
 | Sessions logged | 15 |
+| Phase 04 P03 | 2 | 2 tasks | 3 files |
 
 ### Execution History
 
@@ -115,6 +116,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 - [Phase 04-02]: participantSlots passed as function arg to intersectionSlots() rather than stored in Zustand — server data stays as props
 - [Phase 04-02]: inline style for backgroundColor (not dynamic Tailwind class) — Tailwind v4 scans at build time, cannot generate runtime hex strings
 - [Phase 04-02]: sqrt interpolation for perceptual color spread across small participant counts (2-10 people)
+- [Phase 04]: Number() coercion on heatmapMap counts — Neon HTTP driver returns count() as string from Postgres
+- [Phase 04]: BestTimeCallout always renders — warm empty state when no responses (not hidden)
+- [Phase 04]: ParticipantList disables non-responder chips — no slot data to intersect on
 
 ### Open Questions
 
@@ -161,8 +165,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 | 13 | 2026-02-18 | Phase 3 Plan 03 | Built AvailabilityDrawer (vaul bottom/right drawer, auto-save on close, load-on-open toast, timezone auto-detect) and AvailabilityCTA; wired drawer into event page replacing static href CTA — drawer integration complete |
 | 14 | 2026-02-18 | Phase 3 Plan 04 | Human verification checkpoint — all 6 test scenarios passed (touch drag-to-paint, save/reload persistence, timezone display and correction, 14-day grid, 44px touch targets, auto-save on close). Fixed production build (lazy Resend init), VisuallyHidden Drawer.Title accessibility, Sonner toast 3s duration. Phase 3 complete. |
 | 15 | 2026-02-18 | Phase 4 Plan 01 | Added nullable creator_token column to events table (drizzle-kit push to Neon), POST /api/events generates creatorToken and sets httpOnly timely_creator_{id} cookie — HEAT-06 creator identity foundation complete. |
+| 16 | 2026-02-19 | Phase 4 Plan 03 | Built HeatmapGrid (read-only CSS grid, slotColor() per cell, tap-a-name dim effect, Number() coercion for Neon counts), BestTimeCallout (always-visible, warm empty state, creator confirm affordance), ParticipantList (responded-first sort, tap-a-name toggleName(), disabled chips for non-responders). |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-18 — Phase 4 Plan 01 complete. Creator identity token (nullable creator_token column + httpOnly cookie) shipped. HEAT-06 unblocked. Advancing to Phase 4 Plan 02.*
+*Last updated: 2026-02-19 — Phase 4 Plan 03 complete. HeatmapGrid, BestTimeCallout, ParticipantList shipped. Advancing to Phase 4 Plan 04.*
