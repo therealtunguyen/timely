@@ -1,13 +1,59 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { motion } from 'motion/react'
 
 interface GridCellProps {
   slotKey: string
-  isSelected: boolean
+  // Edit mode (existing)
+  isSelected?: boolean
+  // Heatmap mode (new — all optional)
+  heatmapColor?: string         // Pre-computed hex color from slotColor(). Applied via inline style (NOT className — Tailwind cannot generate runtime hex strings)
+  isOwn?: boolean               // Current viewer has this slot marked — shows personal indicator
+  dimmed?: boolean              // Tap-a-name: slot is not in intersection — dims to near-white
+  count?: number                // For aria-label
+  totalParticipants?: number    // For aria-label
+  dateLabel?: string            // For aria-label e.g. "Tuesday"
+  timeLabel?: string            // For aria-label e.g. "10:00–10:30 AM"
 }
 
-export function GridCell({ slotKey, isSelected }: GridCellProps) {
+export function GridCell({
+  slotKey,
+  isSelected = false,
+  heatmapColor,
+  isOwn = false,
+  dimmed = false,
+  count,
+  totalParticipants,
+  dateLabel,
+  timeLabel,
+}: GridCellProps) {
+  // Build aria-label when heatmap data is available
+  const ariaLabel = (count !== undefined && totalParticipants !== undefined && timeLabel && dateLabel)
+    ? `${count} of ${totalParticipants} people available ${timeLabel} ${dateLabel}`
+    : undefined
+
+  // Heatmap mode: uses heatmapColor inline style + motion for dim effect
+  if (heatmapColor !== undefined) {
+    return (
+      <motion.div
+        data-slot-key={slotKey}
+        animate={{ opacity: dimmed ? 0.2 : 1 }}
+        transition={{ duration: 0.15 }}
+        className="relative min-h-[44px] min-w-[44px] border-b border-r border-[#E5DDD4] select-none"
+        style={{ backgroundColor: heatmapColor }}
+        aria-label={ariaLabel}
+        role="gridcell"
+      >
+        {/* Personal indicator: inner border overlay when viewer owns this slot */}
+        {isOwn && (
+          <div className="absolute inset-[3px] rounded-sm border-2 border-white/70 pointer-events-none" />
+        )}
+      </motion.div>
+    )
+  }
+
+  // Edit mode (original behavior — unchanged)
   return (
     <div
       data-slot-key={slotKey}
