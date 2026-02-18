@@ -3,9 +3,10 @@ import { notFound } from 'next/navigation'
 import { db } from '@/lib/db'
 import { events, eventDates, participants } from '@/lib/schema'
 import { eq } from 'drizzle-orm'
-import { format, parseISO } from 'date-fns'
+import { eachDayOfInterval, format, parseISO } from 'date-fns'
 import { getSession } from '@/lib/auth'
 import { ParticipantActions } from '@/components/identity/participant-actions'
+import { AvailabilityCTA } from '@/components/availability/availability-cta'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -69,6 +70,26 @@ export default async function EventPage({ params }: Props) {
 
   const existingNames = existingParticipants.map((p) => p.name)
 
+  // Phase 3: Compute gridDates for the availability drawer
+  let gridDates: string[] = []
+  if (event.dateMode === 'specific_dates') {
+    gridDates = candidateDates  // already loaded above
+  } else if (event.rangeStart && event.rangeEnd) {
+    gridDates = eachDayOfInterval({ start: event.rangeStart, end: event.rangeEnd })
+      .map(d => format(d, 'yyyy-MM-dd'))
+      .slice(0, 14)  // 14-day max per decisions
+  }
+
+  // Phase 3: Query submittedAt to determine CTA label
+  let hasSubmitted = false
+  if (session) {
+    const participant = await db.query.participants.findFirst({
+      where: eq(participants.id, session.participantId),
+      columns: { submittedAt: true },
+    })
+    hasSubmitted = participant?.submittedAt != null
+  }
+
   return (
     <main className="min-h-dvh px-4 py-10">
       <div className="max-w-lg mx-auto space-y-6">
@@ -128,12 +149,15 @@ export default async function EventPage({ params }: Props) {
 
         {/* CTA — personalized when session active, two-button choice when not */}
         {session ? (
-          <a
-            href={`/e/${id}/availability`}
-            className="block w-full text-center bg-[#E8823A] hover:bg-[#D4722E] text-white font-medium py-3 px-6 rounded-lg transition-colors"
-          >
-            Welcome back, {session.participantName} — Edit your availability
-          </a>
+          <AvailabilityCTA
+            eventId={id}
+            participantName={session.participantName}
+            hasSubmitted={hasSubmitted}
+            dates={gridDates}
+            dayStart={event.dayStart}
+            dayEnd={event.dayEnd}
+            dateMode={event.dateMode}
+          />
         ) : (
           <ParticipantActions
             eventId={id}
