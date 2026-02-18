@@ -20,14 +20,15 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 3 — Availability Grid (Mobile-First) |
-| Plan | 02 complete — advancing to 03 |
+| Plan | 03 complete — advancing to 04 |
 | Status | In progress |
 | Blocking issues | RESEND_API_KEY needed for magic link email testing (deferred — does not block Phase 3) |
 
 **Progress:**
 ```
-[████████████████████████████░░░░░░░░░░░░] 55%
+[████████████████████████████████████░░░] 92%
 Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
+```
 ```
 
 ---
@@ -37,9 +38,10 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | Metric | Value |
 |--------|-------|
 | Phases complete | 2 / 5 |
-| Plans complete | 10 / ~16 |
+| Plans complete | 11 / ~16 |
 | Requirements shipped | 42 / 41 (EVNT-01–07, TIME-01–04, MOBI-01–04, IDEN-01–09, SECR-01, SECR-02, GRID-01–08) |
 | Sessions logged | 12 |
+| Phase 03-availability-grid-mobile-first P03 | 8 | 2 tasks | 3 files |
 
 ### Execution History
 
@@ -55,6 +57,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | 02-participant-identity-and-pin-system P04 | 2 min | 2 | 3 |
 | 03-availability-grid-mobile-first P01 | 2 min | 2 | 4 |
 | 03-availability-grid-mobile-first P02 | 2 min | 2 | 4 |
+| 03-availability-grid-mobile-first P03 | 8 min | 2 | 3 |
 
 ---
 
@@ -101,6 +104,8 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | paintSlot explicit mode param ('add' or 'remove') | Drag gesture sets mode from first cell touched — explicit mode is cleaner than toggle for drag-to-paint | 2026-02-18 |
 | CSS grid: time labels inlined in grid (not TimeColumn component) | CSS grid requires label cells as siblings of data cells for column alignment — TimeColumn exists as standalone component | 2026-02-18 |
 | TimezoneSelector closes on selection | setIsOpen(false) after setTimezone() for clean UX flow | 2026-02-18 |
+- [Phase 03]: Derived dirty boolean (not isDirty() closure) to ensure reactive Save button updates in AvailabilityDrawer
+- [Phase 03]: saveInProgress ref prevents double-save on vaul onOpenChange double-fire (issue #345)
 
 ### Open Questions
 
@@ -144,8 +149,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | 10 | 2026-02-18 | Phase 2 Plan 05 | Human verification checkpoint — Tests 1–4 and 6 passed; post-checkpoint UX fixes: two-button new-vs-returning CTA, inline "Edit as [name] instead" button. Tests 5 and 7 deferred pending RESEND_API_KEY. Phase 2 complete. |
 | 11 | 2026-02-18 | Phase 3 Plan 01 | Installed Zustand v5, created useGridStore with Set-based slot tracking, built GET/POST /api/availability with db.batch() atomic replace — grid data foundation complete |
 | 12 | 2026-02-18 | Phase 3 Plan 02 | Built GridCell (44px touch target, data-slot-key), AvailabilityGrid (Pointer Events drag-to-paint, touch-none, data-vaul-no-drag, fromZonedTime), TimezoneSelector (Intl.supportedValuesOf dropdown) — core grid UI interaction layer complete |
+| 13 | 2026-02-18 | Phase 3 Plan 03 | Built AvailabilityDrawer (vaul bottom/right drawer, auto-save on close, load-on-open toast, timezone auto-detect) and AvailabilityCTA; wired drawer into event page replacing static href CTA — drawer integration complete |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-18 — Phase 3 Plan 02 complete. Core grid UI interaction layer built (GridCell, AvailabilityGrid, TimezoneSelector).*
+*Last updated: 2026-02-18 — Phase 3 Plan 03 complete. AvailabilityDrawer integration layer built (drawer, CTA wrapper, event page wired).*
