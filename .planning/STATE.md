@@ -20,7 +20,7 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 4 — Availability Heatmap |
-| Plan | 03-04 complete — Phase 3 done, advancing to Phase 4 |
+| Plan | 04-01 complete — creator identity token shipped |
 | Status | In progress |
 | Blocking issues | RESEND_API_KEY needed for magic link email testing (deferred — does not block Phase 4) |
 
@@ -37,11 +37,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 | Metric | Value |
 |--------|-------|
 | Phases complete | 3 / 5 |
-| Plans complete | 12 / ~16 |
-| Requirements shipped | 42 / 41 (EVNT-01–07, TIME-01–04, MOBI-01–04, IDEN-01–09, SECR-01, SECR-02, GRID-01–08) |
-| Sessions logged | 14 |
-| Phase 04-heatmap-and-results-view P01 | 1 | 2 tasks | 2 files |
-| Phase 04-heatmap-and-results-view P02 | 1 | 2 tasks | 3 files |
+| Plans complete | 13 / ~16 |
+| Requirements shipped | 43 / 41 (EVNT-01–07, TIME-01–04, MOBI-01–04, IDEN-01–09, SECR-01, SECR-02, GRID-01–08, HEAT-06) |
+| Sessions logged | 15 |
 
 ### Execution History
 
@@ -59,6 +57,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 | 03-availability-grid-mobile-first P02 | 2 min | 2 | 4 |
 | 03-availability-grid-mobile-first P03 | 8 min | 2 | 3 |
 | 03-availability-grid-mobile-first P04 | 15 min | 2 | 2 |
+| 04-heatmap-and-results-view P01 | 1 min | 2 | 2 |
 
 ---
 
@@ -161,8 +160,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 | 12 | 2026-02-18 | Phase 3 Plan 02 | Built GridCell (44px touch target, data-slot-key), AvailabilityGrid (Pointer Events drag-to-paint, touch-none, data-vaul-no-drag, fromZonedTime), TimezoneSelector (Intl.supportedValuesOf dropdown) — core grid UI interaction layer complete |
 | 13 | 2026-02-18 | Phase 3 Plan 03 | Built AvailabilityDrawer (vaul bottom/right drawer, auto-save on close, load-on-open toast, timezone auto-detect) and AvailabilityCTA; wired drawer into event page replacing static href CTA — drawer integration complete |
 | 14 | 2026-02-18 | Phase 3 Plan 04 | Human verification checkpoint — all 6 test scenarios passed (touch drag-to-paint, save/reload persistence, timezone display and correction, 14-day grid, 44px touch targets, auto-save on close). Fixed production build (lazy Resend init), VisuallyHidden Drawer.Title accessibility, Sonner toast 3s duration. Phase 3 complete. |
+| 15 | 2026-02-18 | Phase 4 Plan 01 | Added nullable creator_token column to events table (drizzle-kit push to Neon), POST /api/events generates creatorToken and sets httpOnly timely_creator_{id} cookie — HEAT-06 creator identity foundation complete. |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-18 — Phase 3 complete. Human verification approved all 6 test scenarios. Production build fixed (lazy Resend init). Advancing to Phase 4 — Availability Heatmap.*
+*Last updated: 2026-02-18 — Phase 4 Plan 01 complete. Creator identity token (nullable creator_token column + httpOnly cookie) shipped. HEAT-06 unblocked. Advancing to Phase 4 Plan 02.*
