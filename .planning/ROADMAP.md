@@ -137,13 +137,22 @@ Plans:
 
 **Requirements:** HEAT-01, HEAT-02, HEAT-03, HEAT-04, HEAT-05, HEAT-06
 
+**Plans:** 5 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Add creatorToken to events schema + set creator cookie in /api/events
+- [ ] 04-02-PLAN.md — Heatmap color utility, heatmapStore (Zustand), extended GridCell with heatmap props
+- [ ] 04-03-PLAN.md — HeatmapGrid, BestTimeCallout, and ParticipantList components
+- [ ] 04-04-PLAN.md — ConfirmTimeSheet, confirmTime Server Action, event page full heatmap wiring
+- [ ] 04-05-PLAN.md — Human verification checkpoint (7 test scenarios)
+
 **Delivers:**
 - Heatmap overlay on the grid: slot background color driven by participant count, server-computed via `GROUP BY slot_start`
 - Warm amber color scale (accessible — no red/green): `#FAF7F4` (0 people) through `#7C4A0E` (peak)
 - Accessibility labels on each cell: "3 of 5 people available 10:00–10:30 AM Tuesday"
 - Participant response list: shows who has responded vs. who hasn't, with response counts
 - Tap-a-name mode: tapping a participant's name highlights only their marked slots on the grid
-- Best-time callout: top 1–3 slots with highest overlap count are surfaced prominently
+- Best-time callout: top slot with highest overlap count surfaced prominently above the grid
 - Creator confirm-time flow: `vaul` bottom sheet on mobile slides up with the selected slot, participant count, and a "Confirm this time" button
 - Confirmed state: event page shows the locked time prominently; grid enters read-only mode
 
@@ -192,7 +201,7 @@ Plans:
 | 1. Foundation and Event Creation | 4/4 | Complete | 2026-02-18 |
 | 2. Participant Identity and PIN System | 5/5 | Complete | 2026-02-18 |
 | 3. Availability Grid (Mobile-First) | 0/4 | Not started | - |
-| 4. Heatmap and Results View | 0/? | Not started | - |
+| 4. Heatmap and Results View | 0/5 | Not started | - |
 | 5. Polish and Launch Readiness | 0/? | Not started | - |
 
 ---
@@ -249,4 +258,4 @@ Plans:
 ---
 
 *Roadmap created: 2026-02-17*
-*Last updated: 2026-02-18 — Phase 3 planned (4 plans)*
+*Last updated: 2026-02-18 — Phase 4 planned (5 plans)*
