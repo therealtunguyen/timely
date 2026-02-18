@@ -1,16 +1,16 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { db } from '@/lib/db'
-import { events, eventDates } from '@/lib/schema'
+import { events, eventDates, participants } from '@/lib/schema'
 import { eq } from 'drizzle-orm'
 import { format, parseISO } from 'date-fns'
+import { getSession } from '@/lib/auth'
+import { JoinFlow } from '@/components/identity/join-flow'
 
 type Props = { params: Promise<{ id: string }> }
 
-// generateMetadata — populates <title>, <meta name="description">, and openGraph tags.
-// These are what iMessage, WhatsApp, Slack, and Twitter scrapers read for link previews.
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params  // CRITICAL: must await in Next.js 15+
+  const { id } = await params
 
   const event = await db.query.events.findFirst({
     where: eq(events.id, id),
@@ -40,9 +40,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-// EventPage — async Server Component
 export default async function EventPage({ params }: Props) {
-  const { id } = await params  // CRITICAL: must await in Next.js 15+
+  const { id } = await params
 
   // Fetch event
   const event = await db.query.events.findFirst({
@@ -60,6 +59,15 @@ export default async function EventPage({ params }: Props) {
       .orderBy(eventDates.sortOrder)
     candidateDates = rows.map((r) => r.date)
   }
+
+  // Phase 2: Read session and fetch participant names for JoinFlow
+  const session = await getSession(id)
+  const existingParticipants = await db
+    .select({ name: participants.name })
+    .from(participants)
+    .where(eq(participants.eventId, id))
+
+  const existingNames = existingParticipants.map((p) => p.name)
 
   return (
     <main className="min-h-dvh px-4 py-10">
@@ -118,19 +126,41 @@ export default async function EventPage({ params }: Props) {
           </p>
         </section>
 
-        {/* CTA */}
-        <a
-          href={`/e/${id}/join`}
-          className="block w-full text-center bg-[#E8823A] hover:bg-[#D4722E] text-white font-medium py-3 px-6 rounded-lg transition-colors"
-        >
-          Mark your availability
-        </a>
-
-        {/* Response count placeholder — populated in Phase 3 */}
-        <p className="text-center text-sm text-[#A89E94]">
-          Be the first to respond
-        </p>
+        {/* CTA — personalized single element when session active, generic when not */}
+        {session ? (
+          // Single element per CONTEXT.md locked decision:
+          // "Welcome back, [Name] — Edit your availability" as one combined CTA
+          <a
+            href={`/e/${id}/availability`}
+            className="block w-full text-center bg-[#E8823A] hover:bg-[#D4722E] text-white font-medium py-3 px-6 rounded-lg transition-colors"
+          >
+            Welcome back, {session.participantName} — Edit your availability
+          </a>
+        ) : (
+          <>
+            {/* Generic CTA — JoinFlow auto-opens the name sheet on mount */}
+            <button
+              type="button"
+              className="block w-full text-center bg-[#E8823A] hover:bg-[#D4722E] text-white font-medium py-3 px-6 rounded-lg transition-colors"
+            >
+              Mark your availability
+            </button>
+            <p className="text-center text-sm text-[#A89E94]">
+              {existingNames.length > 0
+                ? `${existingNames.length} ${existingNames.length === 1 ? 'person has' : 'people have'} responded`
+                : 'Be the first to respond'}
+            </p>
+          </>
+        )}
       </div>
+
+      {/* JoinFlow — client island that manages name + PIN sheet sequence */}
+      {/* sessionParticipantName=null triggers auto-open of the name sheet */}
+      <JoinFlow
+        eventId={id}
+        sessionParticipantName={session?.participantName ?? null}
+        existingNames={existingNames}
+      />
     </main>
   )
 }
