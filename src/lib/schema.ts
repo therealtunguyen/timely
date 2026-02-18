@@ -26,6 +26,7 @@ export const events = pgTable('events', {
   timezone: text('timezone').notNull(),                           // IANA tz string e.g. "America/New_York"
   status: eventStatusEnum('status').notNull().default('open'),
   confirmedSlot: timestamp('confirmed_slot', { withTimezone: true }),  // UTC — set when creator confirms
+  creatorToken: text('creator_token'),                                 // Nullable — set at creation; NULL for pre-Phase-4 events
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
 })
