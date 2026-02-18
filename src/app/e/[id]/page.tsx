@@ -5,7 +5,7 @@ import { events, eventDates, participants } from '@/lib/schema'
 import { eq } from 'drizzle-orm'
 import { format, parseISO } from 'date-fns'
 import { getSession } from '@/lib/auth'
-import { JoinFlow } from '@/components/identity/join-flow'
+import { ParticipantActions } from '@/components/identity/participant-actions'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -126,10 +126,8 @@ export default async function EventPage({ params }: Props) {
           </p>
         </section>
 
-        {/* CTA — personalized single element when session active, generic when not */}
+        {/* CTA — personalized when session active, two-button choice when not */}
         {session ? (
-          // Single element per CONTEXT.md locked decision:
-          // "Welcome back, [Name] — Edit your availability" as one combined CTA
           <a
             href={`/e/${id}/availability`}
             className="block w-full text-center bg-[#E8823A] hover:bg-[#D4722E] text-white font-medium py-3 px-6 rounded-lg transition-colors"
@@ -137,30 +135,13 @@ export default async function EventPage({ params }: Props) {
             Welcome back, {session.participantName} — Edit your availability
           </a>
         ) : (
-          <>
-            {/* Generic CTA — JoinFlow auto-opens the name sheet on mount */}
-            <button
-              type="button"
-              className="block w-full text-center bg-[#E8823A] hover:bg-[#D4722E] text-white font-medium py-3 px-6 rounded-lg transition-colors"
-            >
-              Mark your availability
-            </button>
-            <p className="text-center text-sm text-[#A89E94]">
-              {existingNames.length > 0
-                ? `${existingNames.length} ${existingNames.length === 1 ? 'person has' : 'people have'} responded`
-                : 'Be the first to respond'}
-            </p>
-          </>
+          <ParticipantActions
+            eventId={id}
+            existingNames={existingNames}
+            responseCount={existingNames.length}
+          />
         )}
       </div>
-
-      {/* JoinFlow — client island that manages name + PIN sheet sequence */}
-      {/* sessionParticipantName=null triggers auto-open of the name sheet */}
-      <JoinFlow
-        eventId={id}
-        sessionParticipantName={session?.participantName ?? null}
-        existingNames={existingNames}
-      />
     </main>
   )
 }

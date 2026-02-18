@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 import { NameSheet } from './name-sheet'
 import { PinSheet } from './pin-sheet'
@@ -10,40 +10,46 @@ type ActiveSheet = 'none' | 'name' | 'pin-setup' | 'pin-verify' | 'magic-link'
 
 interface JoinFlowProps {
   eventId: string
-  // Passed from server: if null, user has no session and must go through name+PIN flow
-  // If provided, user has an active session — JoinFlow renders nothing (CTA handled by parent)
-  sessionParticipantName: string | null
-  // Names already claimed on this event (fetched server-side, passed down)
+  // 'new' — opened via "Mark my availability" (first-time visitor)
+  // 'returning' — opened via "Already joined? Edit my availability"
+  // 'none' — closed, no sheet active
+  flowMode: 'none' | 'new' | 'returning'
   existingNames: string[]
+  onClose: () => void
 }
 
-export function JoinFlow({ eventId, sessionParticipantName, existingNames }: JoinFlowProps) {
-  // If the user has an active session, this component renders nothing —
-  // the parent (event page) shows the personalized CTA
-  const [activeSheet, setActiveSheet] = useState<ActiveSheet>(
-    sessionParticipantName ? 'none' : 'name'
-  )
+export function JoinFlow({ eventId, flowMode, existingNames, onClose }: JoinFlowProps) {
+  const [activeSheet, setActiveSheet] = useState<ActiveSheet>('none')
 
-  // State shared between sheets: name confirmed available in NameSheet, carried to PinSheet
+  // State shared between sheets: name confirmed in NameSheet, carried to PinSheet
   const [claimedName, setClaimedName] = useState<string>('')
 
-  // Called when check-name returns status:'available' — new user, route to PIN setup
+  // Open name sheet when parent activates a flow
+  useEffect(() => {
+    if (flowMode !== 'none') {
+      setActiveSheet('name')
+    }
+  }, [flowMode])
+
+  const handleClose = useCallback(() => {
+    setActiveSheet('none')
+    onClose()
+  }, [onClose])
+
+  // Called when check-name returns status:'available' in 'new' flow
   const handleNameClaimed = useCallback((name: string) => {
     setClaimedName(name)
-    setActiveSheet('none')  // Close name sheet first
-    // Transition to PIN setup after name sheet animation completes.
-    // 350ms matches the default vaul close animation duration.
+    setActiveSheet('none')
     setTimeout(() => {
       toast('Name claimed — now set your PIN')
       setActiveSheet('pin-setup')
     }, 350)
   }, [])
 
-  // Called when check-name returns status:'exists' — returning user, route to PIN verify
+  // Called when check-name returns status:'exists' in 'returning' flow
   const handleNameExists = useCallback((name: string) => {
     setClaimedName(name)
-    setActiveSheet('none')  // Close name sheet first
-    // Same animation delay pattern as handleNameClaimed — no toast for returning users
+    setActiveSheet('none')
     setTimeout(() => {
       setActiveSheet('pin-verify')
     }, 350)
@@ -51,7 +57,6 @@ export function JoinFlow({ eventId, sessionParticipantName, existingNames }: Joi
 
   const handlePinSet = useCallback(() => {
     setActiveSheet('none')
-    // Trigger full page reload to show updated event page with session
     window.location.reload()
   }, [])
 
@@ -73,15 +78,16 @@ export function JoinFlow({ eventId, sessionParticipantName, existingNames }: Joi
     <>
       <NameSheet
         open={activeSheet === 'name'}
-        onOpenChange={(open: boolean) => !open && setActiveSheet('none')}
+        onOpenChange={(open) => !open && handleClose()}
         eventId={eventId}
         existingNames={existingNames}
+        flow={flowMode === 'returning' ? 'returning' : 'new'}
         onNameClaimed={handleNameClaimed}
         onNameExists={handleNameExists}
       />
       <PinSheet
         open={activeSheet === 'pin-setup' || activeSheet === 'pin-verify'}
-        onOpenChange={(open: boolean) => !open && setActiveSheet('none')}
+        onOpenChange={(open) => !open && setActiveSheet('none')}
         mode={activeSheet === 'pin-setup' ? 'setup' : 'verify'}
         eventId={eventId}
         participantName={claimedName}
@@ -90,7 +96,7 @@ export function JoinFlow({ eventId, sessionParticipantName, existingNames }: Joi
       />
       <MagicLinkSheet
         open={activeSheet === 'magic-link'}
-        onOpenChange={(open: boolean) => !open && setActiveSheet('none')}
+        onOpenChange={(open) => !open && setActiveSheet('none')}
         eventId={eventId}
         participantName={claimedName}
         onSent={handleMagicLinkSent}

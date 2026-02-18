@@ -16,8 +16,11 @@ interface NameSheetProps {
   onOpenChange: (open: boolean) => void
   eventId: string
   existingNames: string[]
-  onNameClaimed: (name: string) => void  // status:'available' — new user
-  onNameExists: (name: string) => void   // status:'exists' — returning user
+  // 'new' — first-time visitor, name must be available
+  // 'returning' — editing visitor, name must already exist
+  flow: 'new' | 'returning'
+  onNameClaimed: (name: string) => void  // 'new' flow: name available → PIN setup
+  onNameExists: (name: string) => void   // 'returning' flow: name found → PIN verify
 }
 
 export function NameSheet({
@@ -25,6 +28,7 @@ export function NameSheet({
   onOpenChange,
   eventId,
   existingNames,
+  flow,
   onNameClaimed,
   onNameExists,
 }: NameSheetProps) {
@@ -41,9 +45,6 @@ export function NameSheet({
     setError(null)
 
     try {
-      // check-name is read-only: validates availability without inserting anything.
-      // Always returns 200 with {status:'available'} or {status:'exists'}.
-      // The actual DB insert happens in PinSheet via POST /api/participants/join.
       const res = await fetch('/api/participants/check-name', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -51,7 +52,6 @@ export function NameSheet({
       })
 
       if (!res.ok) {
-        // Only non-200 responses are errors (e.g. 404 event not found, 422 validation, 500 server error)
         setError('Something went wrong. Try again.')
         setLoading(false)
         return
@@ -59,13 +59,25 @@ export function NameSheet({
 
       const data = await res.json()
 
-      if (data.status === 'exists') {
-        // Returning user — hand off to JoinFlow which will open PIN verify sheet
-        // with "Welcome back! Enter your PIN to continue." messaging
-        onNameExists(trimmed)
-      } else {
-        // status === 'available' — new user — hand off; PinSheet will call /api/participants/join
+      if (flow === 'new') {
+        if (data.status === 'exists') {
+          // Name is taken — guide them to use the returning flow instead
+          setError("That name is already taken. If it's yours, close this and tap 'Edit my availability'.")
+          setLoading(false)
+          return
+        }
+        // Name is available — proceed to PIN setup
         onNameClaimed(trimmed)
+      } else {
+        // flow === 'returning'
+        if (data.status === 'available') {
+          // Name not found — they may have typed it wrong
+          setError("We don't recognize that name on this event. Did you join under a different name?")
+          setLoading(false)
+          return
+        }
+        // Name found — proceed to PIN verify
+        onNameExists(trimmed)
       }
     } catch {
       setError('Something went wrong. Try again.')
@@ -74,16 +86,29 @@ export function NameSheet({
     }
   }
 
+  function handleOpenChange(open: boolean) {
+    if (!open) {
+      setName('')
+      setError(null)
+    }
+    onOpenChange(open)
+  }
+
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent className="max-h-[90vh]">
         <DrawerHeader className="text-left px-6 pt-6">
           <DrawerTitle className="text-xl font-semibold text-[#1C1A17]">
-            What&apos;s your name?
+            {flow === 'new' ? "What's your name?" : 'Enter your name to continue'}
           </DrawerTitle>
-          {existingNames.length > 0 && (
+          {flow === 'new' && existingNames.length > 0 && (
             <DrawerDescription className="text-[#6B6158] mt-1">
               Already joined: {existingNames.join(', ')}
+            </DrawerDescription>
+          )}
+          {flow === 'returning' && (
+            <DrawerDescription className="text-[#6B6158] mt-1">
+              Enter the name you used when you first joined.
             </DrawerDescription>
           )}
         </DrawerHeader>
@@ -115,7 +140,7 @@ export function NameSheet({
             disabled={!name.trim() || loading}
             className="w-full bg-[#E8823A] hover:bg-[#D4722E] text-white"
           >
-            {loading ? 'Checking\u2026' : 'Continue'}
+            {loading ? 'Checking…' : 'Continue'}
           </Button>
         </form>
       </DrawerContent>
