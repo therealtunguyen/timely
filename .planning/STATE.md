@@ -8,7 +8,7 @@
 
 **Core value:** Finding a time that works for everyone should feel effortless — share a link, mark your times, see the overlap.
 
-**Current focus:** Phase 2 — Participant Identity and PIN System
+**Current focus:** Phase 3 — Availability Grid (Mobile-First)
 
 **Stack:** Next.js 16 (App Router) + Neon Postgres + Drizzle ORM + Vercel + Resend + Tailwind v4 + shadcn/ui + Zustand (grid only) + Upstash Redis (rate limiting)
 
@@ -19,15 +19,15 @@
 | Field | Value |
 |-------|-------|
 | Milestone | v1.0.0 |
-| Phase | 2 — Participant Identity and PIN System |
-| Plan | 02-04 complete — Phase 2 awaiting verification |
-| Status | In progress |
-| Blocking issues | None |
+| Phase | 3 — Availability Grid (Mobile-First) |
+| Plan | None started |
+| Status | Not started |
+| Blocking issues | RESEND_API_KEY needed for magic link email testing (deferred — does not block Phase 3) |
 
 **Progress:**
 ```
-[█████████░] 89%
-Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
+[████████████████████░░░░░░░░░░░░░░░░░░░░] 40%
+Phase 1 [x]  Phase 2 [x]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 ```
 
 ---
@@ -36,10 +36,10 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 
 | Metric | Value |
 |--------|-------|
-| Phases complete | 1 / 5 |
-| Plans complete | 8 / ~16 |
+| Phases complete | 2 / 5 |
+| Plans complete | 9 / ~16 |
 | Requirements shipped | 30 / 41 (EVNT-01–07, TIME-01, MOBI-01–03, IDEN-01–09, SECR-01, SECR-02) |
-| Sessions logged | 9 |
+| Sessions logged | 10 |
 
 ### Execution History
 
@@ -134,8 +134,9 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | 7 | 2026-02-18 | Phase 2 Plan 02 | Five participant auth Route Handlers: check-name, join, verify-pin, magic-link/request, magic-link/consume — all IDEN and SECR requirements implemented |
 | 8 | 2026-02-18 | Phase 2 Plan 03 | Four identity UI client components: JoinFlow orchestrator, NameSheet, PinSheet (shake animation, Forgot PIN reveal), MagicLinkSheet — complete two-sheet onboarding and PIN recovery flow |
 | 9 | 2026-02-18 | Phase 2 Plan 04 | Wired JoinFlow into event page (session-aware CTA), added magic link error page at /e/[id]/magic, mounted Sonner Toaster in root layout — Phase 2 integration complete |
+| 10 | 2026-02-18 | Phase 2 Plan 05 | Human verification checkpoint — Tests 1–4 and 6 passed; post-checkpoint UX fixes: two-button new-vs-returning CTA, inline "Edit as [name] instead" button. Tests 5 and 7 deferred pending RESEND_API_KEY. Phase 2 complete. |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-18 — Completed 02-participant-identity-and-pin-system/02-04-PLAN.md*
+*Last updated: 2026-02-18 — Phase 2 complete. Advancing to Phase 3: Availability Grid (Mobile-First)*
