@@ -56,8 +56,9 @@ export async function POST(req: NextRequest) {
     timezone,
   } = parsed.data
 
-  // 4. Generate ID and compute expiry (30 days after last candidate date, approximated at creation)
+  // 4. Generate ID, creator token, and compute expiry (30 days after last candidate date, approximated at creation)
   const id = generateId()
+  const creatorToken = generateId()
   const expiresAt = addDays(new Date(), 37)  // 30-day window + 7-day buffer
 
   // 5. Insert event row
@@ -71,6 +72,7 @@ export async function POST(req: NextRequest) {
     dayStart,
     dayEnd,
     timezone,
+    creatorToken,
     expiresAt,
   })
 
@@ -90,5 +92,13 @@ export async function POST(req: NextRequest) {
   }
 
   // 7. Return the new event ID — client will redirect to /e/[id]/confirm
-  return NextResponse.json({ id }, { status: 201 })
+  //    Set an httpOnly creator cookie so Phase 4 can identify the event creator
+  const response = NextResponse.json({ id }, { status: 201 })
+  response.cookies.set(`timely_creator_${id}`, creatorToken, {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 37,  // 37 days — matches event expiry
+  })
+  return response
 }
