@@ -20,14 +20,14 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 1 — Foundation and Event Creation |
-| Plan | 01 complete — starting 02 |
+| Plan | 02 complete — starting 03 |
 | Status | In progress |
 | Blocking issues | None |
 
 **Progress:**
 ```
-[███░░░░░░░] 25%
-Phase 1 [1/4]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
+[█████░░░░░] 50%
+Phase 1 [2/4]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 ```
 
 ---
@@ -37,15 +37,16 @@ Phase 1 [1/4]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | Metric | Value |
 |--------|-------|
 | Phases complete | 0 / 5 |
-| Plans complete | 1 / ~16 |
-| Requirements shipped | 2 / 41 (TIME-01, MOBI-02) |
-| Sessions logged | 2 |
+| Plans complete | 2 / ~16 |
+| Requirements shipped | 10 / 41 (TIME-01, MOBI-02, EVNT-01–06, MOBI-01, MOBI-03) |
+| Sessions logged | 3 |
 
 ### Execution History
 
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | 01-foundation-and-event-creation P01 | 7 min | 2 | 20 |
+| 01-foundation-and-event-creation P02 | 2 min | 2 | 9 |
 
 ---
 
@@ -72,6 +73,8 @@ Phase 1 [1/4]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | Manual Next.js scaffold | create-next-app refused capital-letter directory "Timely" — manual tsconfig/next.config/postcss setup used | 2026-02-18 |
 | drizzle.config.ts env loading | Loads .env.local explicitly via dotenv config({path:'.env.local'}) — dotenv/config defaults to .env only | 2026-02-18 |
 | shadcn @layer base body override | Fixed to use warm palette variables (--color-warm-bg) instead of shadcn's bg-background/text-foreground | 2026-02-18 |
+| Route Handler (not Server Action) for event creation | Server Actions do not cleanly expose raw request headers; IP extraction for rate limiting requires NextRequest | 2026-02-18 |
+| Date serialization as YYYY-MM-DD via .toISOString().split('T')[0] | Never use toLocaleDateString() — it is locale-dependent and produces incorrect date strings | 2026-02-18 |
 
 ### Open Questions
 
@@ -85,7 +88,7 @@ Phase 1 [1/4]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 
 - [ ] Verify `argon2` npm package works on Vercel's Node.js runtime before starting Phase 2 PIN implementation
 - [ ] Confirm Upstash free tier request limits before starting Phase 2 rate limiting
-- [ ] Decide on creator authentication mechanism (session cookie on creation page vs. creator magic link) before Phase 1 event creation form
+- [x] Decide on creator authentication mechanism — resolved: Route Handler with IP-based rate limiting, no session on creation
 
 ### Known Risks
 
@@ -105,8 +108,9 @@ Phase 1 [1/4]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 |---------|------|-------|---------------|
 | 1 | 2026-02-17 | Setup | Project initialized, requirements defined, research completed, roadmap created |
 | 2 | 2026-02-18 | Phase 1 Plan 01 | Scaffolded Next.js 16, Tailwind v4 warm palette, shadcn/ui, Drizzle schema (6 tables), pushed to Neon |
+| 3 | 2026-02-18 | Phase 1 Plan 02 | POST /api/events route handler with Upstash rate limiting, Zod validation, CreateEventForm, DatePicker, /e/[id]/confirm page |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-18 — Completed 01-foundation-and-event-creation/01-01-PLAN.md*
+*Last updated: 2026-02-18 — Completed 01-foundation-and-event-creation/01-02-PLAN.md*
