@@ -26,7 +26,7 @@
 
 **Progress:**
 ```
-[███████████████████████████████████████░░░░░] 75%
+[████████░░] 78%
 Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 ```
 
@@ -40,6 +40,8 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 | Plans complete | 12 / ~16 |
 | Requirements shipped | 42 / 41 (EVNT-01–07, TIME-01–04, MOBI-01–04, IDEN-01–09, SECR-01, SECR-02, GRID-01–08) |
 | Sessions logged | 14 |
+| Phase 04-heatmap-and-results-view P01 | 1 | 2 tasks | 2 files |
+| Phase 04-heatmap-and-results-view P02 | 1 | 2 tasks | 3 files |
 
 ### Execution History
 
@@ -108,6 +110,12 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 - [Phase 03 P04]: Lazy-initialize Resend client inside POST handler (not module scope) — prevents build-time throw when RESEND_API_KEY absent
 - [Phase 03 P04]: Drawer.Title uses VisuallyHidden.Root from @radix-ui/react-visually-hidden — screen reader accessibility without visible heading
 - [Phase 03 P04]: Phase 3 human verification approved — all 6 test scenarios passed (touch drag-to-paint, save/reload, timezone, 14-day grid, 44px targets, auto-save)
+- [Phase 04-heatmap-and-results-view]: creatorToken stored as nullable text (no default) — pre-Phase-4 events have NULL; old events cannot use confirm-time UI (acceptable)
+- [Phase 04-heatmap-and-results-view]: Cookie name timely_creator_{eventId} (per-event) — prevents cross-event creator impersonation
+- [Phase 04-heatmap-and-results-view]: generateId() (nanoid 10-char) reused for creatorToken — consistent ID generation pattern across the codebase
+- [Phase 04-02]: participantSlots passed as function arg to intersectionSlots() rather than stored in Zustand — server data stays as props
+- [Phase 04-02]: inline style for backgroundColor (not dynamic Tailwind class) — Tailwind v4 scans at build time, cannot generate runtime hex strings
+- [Phase 04-02]: sqrt interpolation for perceptual color spread across small participant counts (2-10 people)
 
 ### Open Questions
 
