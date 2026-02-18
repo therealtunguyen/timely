@@ -20,13 +20,13 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 2 — Participant Identity and PIN System |
-| Plan | 02-01 complete — starting 02-02 |
+| Plan | 02-02 complete — starting 02-03 |
 | Status | In progress |
 | Blocking issues | None |
 
 **Progress:**
 ```
-[██████░░░░] 56%
+[███████░░░] 67%
 Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 ```
 
@@ -37,9 +37,9 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | Metric | Value |
 |--------|-------|
 | Phases complete | 1 / 5 |
-| Plans complete | 5 / ~16 |
-| Requirements shipped | 17 / 41 (EVNT-01–07, TIME-01, MOBI-01–03, IDEN-05, IDEN-06, IDEN-08, IDEN-09, SECR-01, SECR-02) |
-| Sessions logged | 6 |
+| Plans complete | 6 / ~16 |
+| Requirements shipped | 25 / 41 (EVNT-01–07, TIME-01, MOBI-01–03, IDEN-01–09, SECR-01, SECR-02) |
+| Sessions logged | 7 |
 
 ### Execution History
 
@@ -50,6 +50,7 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | 01-foundation-and-event-creation P03 | 3 min | 2 | 4 |
 | 01-foundation-and-event-creation P04 | 0 min | 1 | 0 |
 | 02-participant-identity-and-pin-system P01 | 3 min | 2 | 12 |
+| 02-participant-identity-and-pin-system P02 | 2 min | 2 | 5 |
 
 ---
 
@@ -84,6 +85,9 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | serverExternalPackages for @node-rs/argon2 | Required to prevent Next.js WASM bundling error on native addon | 2026-02-18 |
 | Drizzle relations in separate relations.ts | Merged into db singleton; keeps schema.ts focused on table definitions only | 2026-02-18 |
 | buildMagicUrl routes to /api/participants/magic-link/consume | Route Handler validates token then redirects — not a UI page | 2026-02-18 |
+| check-name always returns 200 (never 409) | Taken name is routing signal for returning user, not an error — UI routes to PIN verify sheet | 2026-02-18 |
+| Rate limit before DB/hash work in verify-pin | Argon2id is slow by design; reject rate-limited requests before hash computation begins | 2026-02-18 |
+| magic-link/request returns 200 even when participant not found | Prevents enumeration of valid participant names by timing or status code difference | 2026-02-18 |
 
 ### Open Questions
 
@@ -121,8 +125,9 @@ Phase 1 [x]  Phase 2 [ ]  Phase 3 [ ]  Phase 4 [ ]  Phase 5 [ ]
 | 4 | 2026-02-18 | Phase 1 Plan 03 | Public event page at /e/[id] with generateMetadata, skeleton loading, dynamic OG image (Edge runtime, next/og) |
 | 5 | 2026-02-18 | Phase 1 Plan 04 | Human verification checkpoint passed — all 8 steps approved. Phase 1 complete. Advancing to Phase 2. |
 | 6 | 2026-02-18 | Phase 2 Plan 01 | Phase 2 infrastructure: @node-rs/argon2, resend, react-email, motion installed; argon2/auth/magic-tokens/rate-limiters/email template built; shadcn drawer/input-otp/sonner added |
+| 7 | 2026-02-18 | Phase 2 Plan 02 | Five participant auth Route Handlers: check-name, join, verify-pin, magic-link/request, magic-link/consume — all IDEN and SECR requirements implemented |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-18 — Completed 02-participant-identity-and-pin-system/02-01-PLAN.md*
+*Last updated: 2026-02-18 — Completed 02-participant-identity-and-pin-system/02-02-PLAN.md*
