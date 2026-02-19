@@ -20,7 +20,7 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 5 — Polish and Launch Readiness |
-| Plan | 05-05 complete — ARIA grid structure, keyboard support, focus rings (accessibility) |
+| Plan | 05-02 complete — deleteEvent Server Action, AlertDialog button, flash-toast pattern |
 | Status | In progress |
 | Blocking issues | RESEND_API_KEY needed for magic link email testing (deferred); CRON_SECRET must be set in Vercel project settings before deployment |
 
@@ -194,8 +194,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 | 17 | 2026-02-19 | Phase 4 Plan 04 | Integration layer: confirmTime Server Action (creator cookie verification, revalidatePath), ConfirmTimeSheet vaul bottom sheet, HeatmapResultsClient thin client wrapper, event page refactored with Promise.all parallel fetch — full heatmap results view shipped end-to-end. |
 | 18 | 2026-02-19 | Phase 5 Plan 05 | Accessibility audit: ARIA grid role hierarchy on HeatmapGrid (role=grid/row/rowheader/columnheader/gridcell), keyboard Enter/Space on BestTimeCallout confirm, orange focus-visible rings on all interactive buttons. SECR-03 accessibility requirement complete. |
 | 18 | 2026-02-19 | Phase 5 Plan 01 | SECR-03: vercel.json daily cron (0 3 * * * UTC) + GET /api/cron/expire-events route handler with Bearer auth and Drizzle CASCADE DELETE — automatic event expiry complete. |
+| 19 | 2026-02-19 | Phase 5 Plan 02 | Creator delete infrastructure: shadcn AlertDialog, deleteEvent Server Action (cookie verification + cascade delete + flash cookie), DeleteEventButton (AlertDialog confirmation dialog), FlashToast (reads timely_flash_toast_* cookies on mount, fires Sonner, clears cookie). |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-19 — Phase 5 Plan 01 complete. Vercel Cron job for automatic event expiry (SECR-03) shipped. Advancing to Phase 5 Plan 02.*
+*Last updated: 2026-02-19 — Phase 5 Plan 02 complete. Creator delete infrastructure shipped: deleteEvent Server Action, DeleteEventButton AlertDialog, FlashToast post-redirect pattern. Advancing to Phase 5 Plan 03.*
