@@ -173,6 +173,16 @@ Plans:
 
 **Requirements:** SECR-03, SECR-04
 
+**Plans:** 6 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Event auto-expiry: vercel.json cron + /api/cron/expire-events Route Handler (SECR-03)
+- [ ] 05-02-PLAN.md — Creator delete foundation: shadcn AlertDialog install, deleteEvent Server Action, DeleteEventButton, FlashToast
+- [ ] 05-03-PLAN.md — Honeypot + privacy notice + /privacy page + not-found/expired pages + expiry check
+- [ ] 05-04-PLAN.md — Manage page + event page Manage link + layout footer + FlashToast wiring
+- [ ] 05-05-PLAN.md — Accessibility: ARIA grid roles on heatmap + focus-visible rings + keyboard support
+- [ ] 05-06-PLAN.md — SECR-04 verification (already implemented) + full human smoke test checkpoint
+
 **Delivers:**
 - Event auto-expiry: cron job or Vercel Scheduled Function deletes events and all associated data 30 days after the last candidate date
 - Magic link email addresses purged at token expiry (already in Phase 2 — verified complete here)
@@ -202,7 +212,7 @@ Plans:
 | 2. Participant Identity and PIN System | 5/5 | Complete | 2026-02-18 |
 | 3. Availability Grid (Mobile-First) | 0/4 | Not started | - |
 | 4. Heatmap and Results View | 0/5 | Not started | - |
-| 5. Polish and Launch Readiness | 0/? | Not started | - |
+| 5. Polish and Launch Readiness | 0/6 | Not started | - |
 
 ---
 
