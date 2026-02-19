@@ -33,7 +33,7 @@ export async function deleteEvent(eventId: string): Promise<void> {
   // httpOnly: false — must be readable by client JS in FlashToast component.
   // Random suffix prevents stale toasts from re-displaying on page refresh.
   const toastId = crypto.randomUUID()
-  cookieStore.set(`timely_flash_toast_${toastId}`, encodeURIComponent('Event deleted.'), {
+  cookieStore.set(`timely_flash_toast_${toastId}`, 'Event deleted.', {
     path: '/',
     maxAge: 60, // 60 seconds — consumed on first client render
     httpOnly: false,
