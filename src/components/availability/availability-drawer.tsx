@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Drawer } from 'vaul'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden'
 import { useGridStore } from '@/lib/stores/grid-store'
 import { AvailabilityGrid } from './availability-grid'
 import { TimezoneSelector } from './timezone-selector'
@@ -132,12 +133,17 @@ export function AvailabilityDrawer({
     >
       <Drawer.Trigger asChild>{trigger}</Drawer.Trigger>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/40" />
-        <Drawer.Content className="fixed inset-0 flex flex-col bg-[#FAF8F5] md:left-auto md:right-0 md:inset-y-0 md:w-[480px]">
+        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
+        <Drawer.Content className="fixed inset-0 z-50 flex flex-col bg-[#FAF8F5] md:left-auto md:right-0 md:inset-y-0 md:w-[480px]">
           {/* Drag handle pill — auto-renders for direction=bottom, render manually for right */}
           {direction === 'bottom' && (
             <div className="mx-auto mt-3 mb-1 h-1.5 w-12 rounded-full bg-[#D4C9BD]" />
           )}
+
+          {/* Visually hidden title for screen reader accessibility (Radix Dialog requirement) */}
+          <Drawer.Title asChild>
+            <VisuallyHidden.Root>Availability grid</VisuallyHidden.Root>
+          </Drawer.Title>
 
           {/* Header: close button only — locked decision: no title */}
           <div className="flex items-center justify-between px-4 py-3">
