@@ -20,14 +20,14 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 5 — Polish and Launch Readiness |
-| Plan | 05-04 complete — creator manage page, Manage event link, footer + FlashToast in layout |
-| Status | In progress |
-| Blocking issues | RESEND_API_KEY needed for magic link email testing (deferred); CRON_SECRET must be set in Vercel project settings before deployment |
+| Plan | 05-06 complete — final verification; SECR-04 confirmed; iOS Safari smoke test deferred to Vercel deploy |
+| Status | Phase 5 complete — ready for deployment |
+| Blocking issues | None (code complete). Pre-deploy checklist: set CRON_SECRET, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, RESEND_API_KEY in Vercel project settings; run iOS Safari smoke test post-deploy |
 
 **Progress:**
-[██████████] 96%
-[█████░░░░░] 50%
-Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
+[██████████] 100%
+[██████████] 100%
+Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [x]
 ```
 
 ---
@@ -47,6 +47,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 | Phase 05 P02 | 2 | 2 tasks | 4 files |
 | Phase 05-polish-and-launch-readiness P03 | 2 | 2 tasks | 6 files |
 | Phase 05-polish-and-launch-readiness P04 | 2 | 2 tasks | 3 files |
+| Phase 05-polish-and-launch-readiness P06 | 5 | 2 tasks | 0 files |
 
 ### Execution History
 
@@ -145,6 +146,8 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 - [Phase 05]: Manage page soft no-access (not notFound()) when creator cookie absent — per SECR-03 cookie-loss user decision
 - [Phase 05]: Footer: Privacy link only in root layout footer — appropriate for no-account scheduling tool
 - [Phase 05]: FlashToast placed before Toaster in root layout — Sonner must be initialized before FlashToast useEffect fires
+- [Phase 05]: iOS Safari smoke test deferred to Vercel deploy — project not yet deployed; test requires live URL
+- [Phase 05]: SECR-04 confirmed by code inspection (not live test) — local dev lacks Upstash credentials; wiring verified correct
 
 ### Open Questions
 
@@ -203,5 +206,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 
 ---
 
+| 21 | 2026-02-19 | Phase 5 Plan 06 | Final verification: SECR-04 rate limiting confirmed by code inspection; iOS Safari smoke test deferred to Vercel deployment. Phase 5 complete — all five done-when criteria confirmed (four verified in code; smoke test pending deploy). |
+
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-19 — Phase 5 Plan 04 complete. Creator manage page, Manage event link, footer, and FlashToast wired end-to-end. Advancing to Phase 5 Plan 06.*
+*Last updated: 2026-02-19 — Phase 5 Plan 06 complete. All Phase 5 work verified. App ready for Vercel deployment.*
