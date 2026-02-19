@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { db } from '@/lib/db'
 import { events, eventDates, participants, availability } from '@/lib/schema'
 import { count, desc, eq } from 'drizzle-orm'
@@ -176,6 +177,15 @@ export default async function EventPage({ params }: Props) {
             <p className="text-[#6B6158] text-base leading-relaxed">
               {event.description}
             </p>
+          )}
+          {/* Manage link — visible only to the event creator */}
+          {isCreator && (
+            <Link
+              href={`/e/${id}/manage`}
+              className="inline-block text-xs text-[#A89E94] hover:text-[#6B6158] underline underline-offset-2 focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-[#E8823A]"
+            >
+              Manage event
+            </Link>
           )}
         </div>
 
