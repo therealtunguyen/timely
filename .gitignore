@@ -1,0 +1,10 @@
+.claude
+.playwright
+.next
+.agents
+.playwright-cli
+tsconfig.tsbuildinfo
+.mcp.json
+.env.local
+.env*.local
+node_modules/
