@@ -85,6 +85,8 @@ export function AvailabilityGrid({ dates, dayStart, dayEnd }: AvailabilityGridPr
       <div
         className="touch-none select-none"
         data-vaul-no-drag
+        role="grid"
+        aria-label="Availability grid — drag or tap to mark your available times"
         style={{
           display: 'grid',
           gridTemplateColumns: `80px repeat(${dates.length}, minmax(64px, 1fr))`,

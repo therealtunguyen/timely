@@ -81,27 +81,33 @@ export function HeatmapGrid({
         // Read-only — no pointer event handlers (no drag-to-paint)
         data-vaul-no-drag
         className="select-none"
+        role="grid"
+        aria-label="Availability heatmap"
+        aria-rowcount={slotRows.length + 1}
+        aria-colcount={dates.length + 1}
         style={{
           display: 'grid',
           gridTemplateColumns: `80px repeat(${dates.length}, minmax(64px, 1fr))`,
           minWidth: `${80 + dates.length * 64}px`,
         }}
       >
-        {/* Top-left corner cell (empty, sticky) */}
-        <div className="sticky left-0 z-20 bg-[#FAF8F5]" />
-
-        {/* Date column headers */}
-        {dates.map(date => (
-          <div
-            key={date}
-            className="text-center text-xs font-medium text-[#6B6158] py-2 border-b border-[#E5DDD4] whitespace-pre-line"
-          >
-            {format(parseISO(date), 'EEE\nMMM d')}
-          </div>
-        ))}
+        {/* Header row: corner cell + date column headers */}
+        <div role="row">
+          <div role="columnheader" className="sticky left-0 z-20 bg-[#FAF8F5]" aria-label="Time" />
+          {dates.map(date => (
+            <div
+              key={date}
+              role="columnheader"
+              aria-label={formatDate(parseISO(date), 'EEEE, MMMM d')}
+              className="text-center text-xs font-medium text-[#6B6158] py-2 border-b border-[#E5DDD4] whitespace-pre-line"
+            >
+              {format(parseISO(date), 'EEE\nMMM d')}
+            </div>
+          ))}
+        </div>
 
         {/* Rows: one per 30-min slot */}
-        {slotRows.map(({ slotKey, label, hour, minute }) => {
+        {slotRows.map(({ slotKey, label, hour, minute }, rowIdx) => {
           // Build a human-readable time range label for aria (e.g. "10:00–10:30 AM")
           // Derive the 30-min end label by incrementing minute
           const endHour = minute === 30 ? hour + 1 : hour
@@ -112,14 +118,14 @@ export function HeatmapGrid({
           const timeLabel = `${label}–${endLabel}`
 
           return (
-            <React.Fragment key={slotKey}>
+            <div role="row" key={slotKey} aria-rowindex={rowIdx + 2}>
               {/* Sticky time label */}
-              <div className="sticky left-0 z-10 bg-[#FAF8F5] text-xs text-[#6B6158] min-h-[44px] flex items-start pt-1 px-2 border-b border-[#E5DDD4]">
+              <div role="rowheader" className="sticky left-0 z-10 bg-[#FAF8F5] text-xs text-[#6B6158] min-h-[44px] flex items-start pt-1 px-2 border-b border-[#E5DDD4]">
                 {label}
               </div>
 
               {/* Cells across all date columns */}
-              {dates.map(date => {
+              {dates.map((date, colIdx) => {
                 const cellKey = generateSlotKey(date, hour, minute, tz)
 
                 // CRITICAL: coerce to number — Postgres/Neon driver may return count() as string
@@ -142,10 +148,11 @@ export function HeatmapGrid({
                     totalParticipants={totalParticipants}
                     timeLabel={timeLabel}
                     dateLabel={dateLabel}
+                    tabIndex={colIdx === 0 ? 0 : -1}
                   />
                 )
               })}
-            </React.Fragment>
+            </div>
           )
         })}
       </div>

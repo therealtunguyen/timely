@@ -15,6 +15,7 @@ interface GridCellProps {
   totalParticipants?: number    // For aria-label
   dateLabel?: string            // For aria-label e.g. "Tuesday"
   timeLabel?: string            // For aria-label e.g. "10:00–10:30 AM"
+  tabIndex?: number             // For keyboard navigation: 0 = in tab order, -1 = focusable but not in tab order
 }
 
 export function GridCell({
@@ -27,6 +28,7 @@ export function GridCell({
   totalParticipants,
   dateLabel,
   timeLabel,
+  tabIndex,
 }: GridCellProps) {
   // Build aria-label when heatmap data is available
   const ariaLabel = (count !== undefined && totalParticipants !== undefined && timeLabel && dateLabel)
@@ -44,6 +46,7 @@ export function GridCell({
         style={{ backgroundColor: heatmapColor }}
         aria-label={ariaLabel}
         role="gridcell"
+        tabIndex={tabIndex}
       >
         {/* Personal indicator: inner border overlay when viewer owns this slot */}
         {isOwn && (
