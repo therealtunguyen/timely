@@ -123,6 +123,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 - [Phase 04]: HeatmapResultsClient thin client wrapper owns confirmOpen state — keeps event page as pure Server Component
 - [Phase 04]: ConfirmTimeSheet mounted at page level (via HeatmapResultsClient) as a sibling — not nested inside AvailabilityDrawer (research pitfall #6)
 - [Phase 04]: CTA section hidden when event.status === 'confirmed' — grid is read-only after confirmation
+- [Phase 04]: Creator cookie (timely_creator_{id}) is a persistent cookie (37-day maxAge) — survives tab/browser close but NOT incognito sessions, different devices, or manual cookie clears. If lost, creator cannot confirm a time.
 
 ### Open Questions
 
@@ -131,12 +132,14 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 | Argon2id native addon on Vercel | `@node-rs/argon2` installed and configured with serverExternalPackages — verify on actual Vercel deploy | Partially resolved — will confirm at deploy |
 | Upstash free tier limits | Verify current limits cover expected verification volume before committing | Unresolved — check Phase 2 |
 | GDPR right-to-erasure mechanism | Creator token for manual deletion + 30-day auto-expiry — concrete policy needed before launch | Deferred to Phase 5 |
+| Creator cookie loss | If creator used incognito, switched device, or cleared cookies, they lose confirm-time access. Options: (A) creator link with token in URL shown on /confirm page, (B) creator code shown at creation, (C) accept limitation. Option A is lowest friction — one Route Handler to re-set cookie from ?creator= query param, one line on confirm page. | Unresolved — decide before Phase 5 |
 
 ### Todos
 
 - [x] Verify `argon2` npm package works on Vercel's Node.js runtime before starting Phase 2 PIN implementation (using @node-rs/argon2 with serverExternalPackages)
 - [ ] Confirm Upstash free tier request limits before starting Phase 2 rate limiting
 - [x] Decide on creator authentication mechanism — resolved: Route Handler with IP-based rate limiting, no session on creation
+- [ ] Decide on creator cookie loss recovery strategy before Phase 5 (creator link vs creator code vs accept limitation) — see Open Questions
 
 ### Known Risks
 
@@ -147,6 +150,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 | Touch grid failure on iOS Safari | HIGH | Pointer Events + touch-action:none + ref-based DOM mutation during drag | Implemented in Phase 3 Plan 02 |
 | GDPR exposure | HIGH | 30-day auto-expiry, email purge after TTL, privacy notice | Planned for Phase 5 |
 | Magic link token misimplementation | HIGH | SHA-256 hash only in DB, 30-min TTL, single-use enforced by used_at | Utilities built in Phase 2 Plan 01 |
+| Creator loses confirm access | MEDIUM | Cookie is persistent (37-day) — survives tab close. Lost on incognito/device switch/cookie clear. No recovery path exists today. Mitigate with creator link in Phase 5. | Unresolved — planned for Phase 5 |
 
 ---
 
