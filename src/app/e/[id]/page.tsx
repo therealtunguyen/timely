@@ -54,6 +54,10 @@ export default async function EventPage({ params }: Props) {
   })
   if (!event) notFound()
 
+  // Check expiry — if the event has passed its expiresAt, show the not-found page.
+  // The cron job will eventually delete the record, but until then we must not render stale data.
+  if (event.expiresAt < new Date()) notFound()
+
   // Fetch specific dates (if dateMode = 'specific_dates')
   let candidateDates: string[] = []
   if (event.dateMode === 'specific_dates') {
