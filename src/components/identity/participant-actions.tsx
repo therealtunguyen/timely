@@ -20,7 +20,7 @@ export function ParticipantActions({ eventId, existingNames, responseCount }: Pa
         <button
           type="button"
           onClick={() => setFlowMode('new')}
-          className="block w-full text-center bg-[#E8823A] hover:bg-[#D4722E] text-white font-medium py-3 px-6 rounded-lg transition-colors"
+          className="block w-full text-center bg-[#E8823A] hover:bg-[#D4722E] text-white font-medium py-3 px-6 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8823A] focus-visible:ring-offset-2"
         >
           Mark my availability
         </button>
@@ -28,7 +28,7 @@ export function ParticipantActions({ eventId, existingNames, responseCount }: Pa
           <button
             type="button"
             onClick={() => setFlowMode('returning')}
-            className="text-sm text-[#6B6158] underline underline-offset-2"
+            className="text-sm text-[#6B6158] underline underline-offset-2 focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-[#E8823A]"
           >
             Already joined? Edit my availability
           </button>

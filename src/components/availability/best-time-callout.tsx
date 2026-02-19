@@ -39,12 +39,19 @@ export function BestTimeCallout({
       className={cn(
         'rounded-2xl border bg-[#FAF8F5] px-5 py-4 space-y-1',
         isInteractive
-          ? 'border-[#E8823A] cursor-pointer active:bg-[#F3EFE9] transition-colors'
+          ? 'border-[#E8823A] cursor-pointer active:bg-[#F3EFE9] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8823A] focus-visible:ring-offset-2'
           : 'border-[#E5DDD4]'
       )}
       onClick={isInteractive ? onConfirmClick : undefined}
+      onKeyDown={isInteractive ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onConfirmClick?.()
+        }
+      } : undefined}
       role={isInteractive ? 'button' : undefined}
       aria-label={isInteractive ? 'Tap to confirm this time' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
     >
       <p className="text-sm font-medium text-[#6B6158]">Best time</p>
       <p className="text-xl font-semibold text-[#1C1A17]">{dateStr}</p>

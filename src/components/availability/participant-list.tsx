@@ -39,7 +39,7 @@ export function ParticipantList({ participants }: ParticipantListProps) {
               onClick={() => toggleName(p.name)}
               disabled={!hasResponded}  // Can't filter on someone who hasn't responded
               className={cn(
-                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
+                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8823A] focus-visible:ring-offset-2',
                 isSelected
                   ? 'bg-[#1C1A17] text-white'
                   : hasResponded

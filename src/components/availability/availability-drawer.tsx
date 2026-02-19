@@ -148,7 +148,7 @@ export function AvailabilityDrawer({
           {/* Header: close button only — locked decision: no title */}
           <div className="flex items-center justify-between px-4 py-3">
             <Drawer.Close asChild>
-              <button className="p-2 rounded-lg hover:bg-[#E5DDD4] transition-colors" aria-label="Close">
+              <button className="p-2 rounded-lg hover:bg-[#E5DDD4] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8823A] focus-visible:ring-offset-2" aria-label="Close">
                 <X className="h-5 w-5 text-[#6B6158]" />
               </button>
             </Drawer.Close>
@@ -170,7 +170,7 @@ export function AvailabilityDrawer({
             <button
               onClick={handleExplicitSave}
               disabled={!dirty || isSaving}
-              className="w-full bg-[#E8823A] hover:bg-[#D4722E] disabled:bg-[#E5DDD4] disabled:text-[#9D9086] text-white font-medium py-3 px-6 rounded-lg transition-colors"
+              className="w-full bg-[#E8823A] hover:bg-[#D4722E] disabled:bg-[#E5DDD4] disabled:text-[#9D9086] text-white font-medium py-3 px-6 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8823A] focus-visible:ring-offset-2"
             >
               {isSaving ? 'Saving...' : 'Save availability'}
             </button>
