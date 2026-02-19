@@ -20,12 +20,12 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 5 — Polish and Launch Readiness |
-| Plan | 05-02 complete — deleteEvent Server Action, AlertDialog button, flash-toast pattern |
+| Plan | 05-04 complete — creator manage page, Manage event link, footer + FlashToast in layout |
 | Status | In progress |
 | Blocking issues | RESEND_API_KEY needed for magic link email testing (deferred); CRON_SECRET must be set in Vercel project settings before deployment |
 
 **Progress:**
-[█████████░] 92%
+[██████████] 96%
 [█████░░░░░] 50%
 Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 ```
@@ -46,6 +46,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 | Phase 05 P05 | 2 | 2 tasks | 7 files |
 | Phase 05 P02 | 2 | 2 tasks | 4 files |
 | Phase 05-polish-and-launch-readiness P03 | 2 | 2 tasks | 6 files |
+| Phase 05-polish-and-launch-readiness P04 | 2 | 2 tasks | 3 files |
 
 ### Execution History
 
@@ -141,6 +142,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 - [Phase 05]: Flash cookie httpOnly:false — client JS (FlashToast useEffect) must read via document.cookie
 - [Phase 05]: Honeypot check runs after rate limit but before Zod validation — bots counted against rate limit, DB/hash work skipped
 - [Phase 05]: Privacy page uses GitHub Issues as contact method — appropriate for developer-built no-account tool
+- [Phase 05]: Manage page soft no-access (not notFound()) when creator cookie absent — per SECR-03 cookie-loss user decision
+- [Phase 05]: Footer: Privacy link only in root layout footer — appropriate for no-account scheduling tool
+- [Phase 05]: FlashToast placed before Toaster in root layout — Sonner must be initialized before FlashToast useEffect fires
 
 ### Open Questions
 
@@ -195,8 +199,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 | 18 | 2026-02-19 | Phase 5 Plan 05 | Accessibility audit: ARIA grid role hierarchy on HeatmapGrid (role=grid/row/rowheader/columnheader/gridcell), keyboard Enter/Space on BestTimeCallout confirm, orange focus-visible rings on all interactive buttons. SECR-03 accessibility requirement complete. |
 | 18 | 2026-02-19 | Phase 5 Plan 01 | SECR-03: vercel.json daily cron (0 3 * * * UTC) + GET /api/cron/expire-events route handler with Bearer auth and Drizzle CASCADE DELETE — automatic event expiry complete. |
 | 19 | 2026-02-19 | Phase 5 Plan 02 | Creator delete infrastructure: shadcn AlertDialog, deleteEvent Server Action (cookie verification + cascade delete + flash cookie), DeleteEventButton (AlertDialog confirmation dialog), FlashToast (reads timely_flash_toast_* cookies on mount, fires Sonner, clears cookie). |
+| 20 | 2026-02-19 | Phase 5 Plan 04 | Creator manage page at /e/[id]/manage (cookie identity gate, delete UI, soft no-access fallback), "Manage event" link on event page (isCreator-gated), root layout footer with /privacy link, FlashToast + Toaster co-mounted in layout — full creator-delete-and-toast flow wired end-to-end. |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-19 — Phase 5 Plan 02 complete. Creator delete infrastructure shipped: deleteEvent Server Action, DeleteEventButton AlertDialog, FlashToast post-redirect pattern. Advancing to Phase 5 Plan 03.*
+*Last updated: 2026-02-19 — Phase 5 Plan 04 complete. Creator manage page, Manage event link, footer, and FlashToast wired end-to-end. Advancing to Phase 5 Plan 06.*
