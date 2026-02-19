@@ -36,6 +36,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
+  // 3b. Honeypot check — if the 'website' field is filled, this is a bot.
+  // Return a fake success to avoid telegraphing detection; bots move on, humans never see this field.
+  const typedBody = body as Record<string, unknown>
+  if (typedBody.website && String(typedBody.website).trim() !== '') {
+    return NextResponse.json({ id: generateId() }, { status: 201 })
+  }
+
   const parsed = createEventSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json(

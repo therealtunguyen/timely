@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import type { DateRange } from 'react-day-picker'
 import { DatePicker } from './date-picker'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,7 @@ export function CreateEventForm() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
   const [dayStart, setDayStart] = useState(9)
   const [dayEnd, setDayEnd] = useState(21)
+  const [website, setWebsite] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -45,6 +47,7 @@ export function CreateEventForm() {
       dayStart,
       dayEnd,
       timezone,
+      website,
     }
 
     if (dateMode === 'specific_dates') {
@@ -89,6 +92,21 @@ export function CreateEventForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Honeypot — visually hidden from humans, filled by naive bots.
+          sr-only keeps element in DOM (bots see it) but off-screen.
+          tabIndex={-1} prevents keyboard navigation to this field.
+          autoComplete="one-time-code" is semantically wrong for text, preventing browser autofill.
+          aria-hidden="true" so screen readers skip it. */}
+      <input
+        type="text"
+        name="website"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        className="sr-only"
+        tabIndex={-1}
+        autoComplete="one-time-code"
+        aria-hidden="true"
+      />
       {/* Title */}
       <div className="space-y-2">
         <Label htmlFor="title" className="text-sm font-medium text-[#1C1A17]">
@@ -224,6 +242,16 @@ export function CreateEventForm() {
       >
         {isSubmitting ? 'Creating event...' : 'Create event'}
       </Button>
+
+      <p className="text-xs text-[#A89E94] text-center leading-relaxed">
+        Events and all responses expire automatically after 30 days. No accounts required.{' '}
+        <Link
+          href="/privacy"
+          className="underline underline-offset-2 hover:text-[#6B6158] focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-[#E8823A]"
+        >
+          Privacy
+        </Link>
+      </p>
     </form>
   )
 }
