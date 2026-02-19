@@ -20,12 +20,12 @@
 |-------|-------|
 | Milestone | v1.0.0 |
 | Phase | 5 — Polish and Launch Readiness |
-| Plan | 05-01 complete — Vercel Cron job for automatic event expiry (SECR-03) |
+| Plan | 05-05 complete — ARIA grid structure, keyboard support, focus rings (accessibility) |
 | Status | In progress |
 | Blocking issues | RESEND_API_KEY needed for magic link email testing (deferred); CRON_SECRET must be set in Vercel project settings before deployment |
 
 **Progress:**
-[█████████░] 95%
+[█████████░] 92%
 [█████░░░░░] 50%
 Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 ```
@@ -37,12 +37,15 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 | Metric | Value |
 |--------|-------|
 | Phases complete | 4 / 5 |
-| Plans complete | 15 / ~16 |
+| Plans complete | 16 / ~16 |
 | Requirements shipped | 50 / 41 (EVNT-01–07, TIME-01–04, MOBI-01–04, IDEN-01–09, SECR-01–03, GRID-01–08, HEAT-01–06) |
 | Sessions logged | 18 |
 | Phase 04 P03 | 2 | 2 tasks | 3 files |
 | Phase 04 P04 | 2 | 2 tasks | 4 files |
 | Phase 05 P01 | 2 | 2 tasks | 3 files |
+| Phase 05 P05 | 2 | 2 tasks | 7 files |
+| Phase 05 P02 | 2 | 2 tasks | 4 files |
+| Phase 05-polish-and-launch-readiness P03 | 2 | 2 tasks | 6 files |
 
 ### Execution History
 
@@ -62,6 +65,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 | 03-availability-grid-mobile-first P04 | 15 min | 2 | 2 |
 | 04-heatmap-and-results-view P01 | 1 min | 2 | 2 |
 | 05-polish-and-launch-readiness P01 | 2 min | 2 | 3 |
+| 05-polish-and-launch-readiness P05 | 2 min | 2 | 7 |
 
 ---
 
@@ -126,9 +130,17 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 - [Phase 04]: ConfirmTimeSheet mounted at page level (via HeatmapResultsClient) as a sibling — not nested inside AvailabilityDrawer (research pitfall #6)
 - [Phase 04]: CTA section hidden when event.status === 'confirmed' — grid is read-only after confirmation
 - [Phase 04]: Creator cookie (timely_creator_{id}) is a persistent cookie (37-day maxAge) — survives tab/browser close but NOT incognito sessions, different devices, or manual cookie clears. If lost, creator cannot confirm a time.
+- [Phase 05-05]: tabIndex strategy for heatmap: first cell per row gets tabIndex=0 (in tab order), remaining cells get tabIndex=-1 (focusable but not in tab order) — avoids 300+ tab stops for a 14-day grid
+- [Phase 05-05]: AvailabilityGrid edit mode gets only role=grid container (no role=row/gridcell on cells) — drag-to-paint canvas semantics do not benefit from full ARIA data grid structure
+- [Phase 05-05]: focus-visible: (not focus:) for all interactive rings — shows ring only during keyboard nav, not on mouse click
 - [Phase 05-01]: CRON_SECRET fail-closed — undefined env var produces 'Bearer undefined' which never matches a real auth header; cron endpoint returns 401 safely without CRON_SECRET set
 - [Phase 05-01]: Vercel Hobby cron schedule 0 3 * * * (once daily 3am UTC) — Hobby plan only allows once-per-day execution
 - [Phase 05-01]: CASCADE DELETE on all FK constraints handles full event sweep in one Drizzle query (no batch loops)
+- [Phase 05]: Flash cookie uses random UUID suffix to prevent stale toast re-display on page refresh
+- [Phase 05]: deleteEvent redirect() at top level outside any try/catch — framework exception must not be swallowed
+- [Phase 05]: Flash cookie httpOnly:false — client JS (FlashToast useEffect) must read via document.cookie
+- [Phase 05]: Honeypot check runs after rate limit but before Zod validation — bots counted against rate limit, DB/hash work skipped
+- [Phase 05]: Privacy page uses GitHub Issues as contact method — appropriate for developer-built no-account tool
 
 ### Open Questions
 
@@ -180,6 +192,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 | 15 | 2026-02-18 | Phase 4 Plan 01 | Added nullable creator_token column to events table (drizzle-kit push to Neon), POST /api/events generates creatorToken and sets httpOnly timely_creator_{id} cookie — HEAT-06 creator identity foundation complete. |
 | 16 | 2026-02-19 | Phase 4 Plan 03 | Built HeatmapGrid (read-only CSS grid, slotColor() per cell, tap-a-name dim effect, Number() coercion for Neon counts), BestTimeCallout (always-visible, warm empty state, creator confirm affordance), ParticipantList (responded-first sort, tap-a-name toggleName(), disabled chips for non-responders). |
 | 17 | 2026-02-19 | Phase 4 Plan 04 | Integration layer: confirmTime Server Action (creator cookie verification, revalidatePath), ConfirmTimeSheet vaul bottom sheet, HeatmapResultsClient thin client wrapper, event page refactored with Promise.all parallel fetch — full heatmap results view shipped end-to-end. |
+| 18 | 2026-02-19 | Phase 5 Plan 05 | Accessibility audit: ARIA grid role hierarchy on HeatmapGrid (role=grid/row/rowheader/columnheader/gridcell), keyboard Enter/Space on BestTimeCallout confirm, orange focus-visible rings on all interactive buttons. SECR-03 accessibility requirement complete. |
 | 18 | 2026-02-19 | Phase 5 Plan 01 | SECR-03: vercel.json daily cron (0 3 * * * UTC) + GET /api/cron/expire-events route handler with Bearer auth and Drizzle CASCADE DELETE — automatic event expiry complete. |
 
 ---
