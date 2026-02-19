@@ -8,7 +8,7 @@
 
 **Core value:** Finding a time that works for everyone should feel effortless — share a link, mark your times, see the overlap.
 
-**Current focus:** Phase 4 — Availability Heatmap
+**Current focus:** Phase 5 — Polish and Launch Readiness
 
 **Stack:** Next.js 16 (App Router) + Neon Postgres + Drizzle ORM + Vercel + Resend + Tailwind v4 + shadcn/ui + Zustand (grid only) + Upstash Redis (rate limiting)
 
@@ -19,15 +19,15 @@
 | Field | Value |
 |-------|-------|
 | Milestone | v1.0.0 |
-| Phase | 4 — Availability Heatmap |
-| Plan | 04-04 complete — ConfirmTimeSheet, confirmTime Server Action, event page integration shipped |
+| Phase | 5 — Polish and Launch Readiness |
+| Plan | 05-01 complete — Vercel Cron job for automatic event expiry (SECR-03) |
 | Status | In progress |
-| Blocking issues | RESEND_API_KEY needed for magic link email testing (deferred — does not block Phase 4) |
+| Blocking issues | RESEND_API_KEY needed for magic link email testing (deferred); CRON_SECRET must be set in Vercel project settings before deployment |
 
 **Progress:**
-[█████████░] 94%
-[████████░░] 78%
-Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
+[█████████░] 95%
+[█████░░░░░] 50%
+Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [ ]
 ```
 
 ---
@@ -36,12 +36,13 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 
 | Metric | Value |
 |--------|-------|
-| Phases complete | 3 / 5 |
-| Plans complete | 14 / ~16 |
-| Requirements shipped | 49 / 41 (EVNT-01–07, TIME-01–04, MOBI-01–04, IDEN-01–09, SECR-01, SECR-02, GRID-01–08, HEAT-01–06) |
-| Sessions logged | 17 |
+| Phases complete | 4 / 5 |
+| Plans complete | 15 / ~16 |
+| Requirements shipped | 50 / 41 (EVNT-01–07, TIME-01–04, MOBI-01–04, IDEN-01–09, SECR-01–03, GRID-01–08, HEAT-01–06) |
+| Sessions logged | 18 |
 | Phase 04 P03 | 2 | 2 tasks | 3 files |
 | Phase 04 P04 | 2 | 2 tasks | 4 files |
+| Phase 05 P01 | 2 | 2 tasks | 3 files |
 
 ### Execution History
 
@@ -60,6 +61,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 | 03-availability-grid-mobile-first P03 | 8 min | 2 | 3 |
 | 03-availability-grid-mobile-first P04 | 15 min | 2 | 2 |
 | 04-heatmap-and-results-view P01 | 1 min | 2 | 2 |
+| 05-polish-and-launch-readiness P01 | 2 min | 2 | 3 |
 
 ---
 
@@ -124,6 +126,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 - [Phase 04]: ConfirmTimeSheet mounted at page level (via HeatmapResultsClient) as a sibling — not nested inside AvailabilityDrawer (research pitfall #6)
 - [Phase 04]: CTA section hidden when event.status === 'confirmed' — grid is read-only after confirmation
 - [Phase 04]: Creator cookie (timely_creator_{id}) is a persistent cookie (37-day maxAge) — survives tab/browser close but NOT incognito sessions, different devices, or manual cookie clears. If lost, creator cannot confirm a time.
+- [Phase 05-01]: CRON_SECRET fail-closed — undefined env var produces 'Bearer undefined' which never matches a real auth header; cron endpoint returns 401 safely without CRON_SECRET set
+- [Phase 05-01]: Vercel Hobby cron schedule 0 3 * * * (once daily 3am UTC) — Hobby plan only allows once-per-day execution
+- [Phase 05-01]: CASCADE DELETE on all FK constraints handles full event sweep in one Drizzle query (no batch loops)
 
 ### Open Questions
 
@@ -175,8 +180,9 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [ ]  Phase 5 [ ]
 | 15 | 2026-02-18 | Phase 4 Plan 01 | Added nullable creator_token column to events table (drizzle-kit push to Neon), POST /api/events generates creatorToken and sets httpOnly timely_creator_{id} cookie — HEAT-06 creator identity foundation complete. |
 | 16 | 2026-02-19 | Phase 4 Plan 03 | Built HeatmapGrid (read-only CSS grid, slotColor() per cell, tap-a-name dim effect, Number() coercion for Neon counts), BestTimeCallout (always-visible, warm empty state, creator confirm affordance), ParticipantList (responded-first sort, tap-a-name toggleName(), disabled chips for non-responders). |
 | 17 | 2026-02-19 | Phase 4 Plan 04 | Integration layer: confirmTime Server Action (creator cookie verification, revalidatePath), ConfirmTimeSheet vaul bottom sheet, HeatmapResultsClient thin client wrapper, event page refactored with Promise.all parallel fetch — full heatmap results view shipped end-to-end. |
+| 18 | 2026-02-19 | Phase 5 Plan 01 | SECR-03: vercel.json daily cron (0 3 * * * UTC) + GET /api/cron/expire-events route handler with Bearer auth and Drizzle CASCADE DELETE — automatic event expiry complete. |
 
 ---
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-19 — Phase 4 Plan 04 complete. ConfirmTimeSheet, confirmTime Server Action, HeatmapResultsClient, event page integration shipped. Advancing to Phase 4 Plan 05 (human verification).*
+*Last updated: 2026-02-19 — Phase 5 Plan 01 complete. Vercel Cron job for automatic event expiry (SECR-03) shipped. Advancing to Phase 5 Plan 02.*
