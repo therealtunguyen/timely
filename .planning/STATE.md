@@ -21,8 +21,8 @@
 | Milestone | v1.0.0 |
 | Phase | 5 — Polish and Launch Readiness |
 | Plan | 05-06 complete — final verification; SECR-04 confirmed; iOS Safari smoke test deferred to Vercel deploy |
-| Status | Phase 5 complete — ready for deployment |
-| Blocking issues | None (code complete). Pre-deploy checklist: set CRON_SECRET, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, RESEND_API_KEY in Vercel project settings; run iOS Safari smoke test post-deploy |
+| Status | **Deployed** — https://timely-cyan-three.vercel.app |
+| Blocking issues | **Resend from-address:** Magic link emails sent from `noreply@timely.app` — Resend free tier only delivers to verified email (`atunguye25@gmail.com`) until domain is verified. To send to real users: either verify a domain at resend.com/domains, or change `from:` in `src/app/api/participants/magic-link/request/route.ts` to `onboarding@resend.dev` for zero-config testing. iOS Safari smoke test still pending (requires real device on live URL). |
 
 **Progress:**
 [██████████] 100%
@@ -207,6 +207,7 @@ Phase 1 [x]  Phase 2 [x]  Phase 3 [x]  Phase 4 [x]  Phase 5 [x]
 ---
 
 | 21 | 2026-02-19 | Phase 5 Plan 06 | Final verification: SECR-04 rate limiting confirmed by code inspection; iOS Safari smoke test deferred to Vercel deployment. Phase 5 complete — all five done-when criteria confirmed (four verified in code; smoke test pending deploy). |
+| 22 | 2026-02-19 | Deployment | Deployed to Vercel. All env vars set (DATABASE_URL, UPSTASH_REDIS_REST_URL/TOKEN, CRON_SECRET, RESEND_API_KEY, NEXT_PUBLIC_APP_URL). Live smoke tests passed: home 200, /privacy 200, /e/fake 200 (not-found UI), cron 401 without auth, cron {"deleted":0} with auth. FlashToast bug fixed (usePathname dependency + remove double-encode). Resend from-address limitation noted — magic links only deliver to atunguye25@gmail.com until domain verified. |
 
 *State initialized: 2026-02-17*
-*Last updated: 2026-02-19 — Phase 5 Plan 06 complete. All Phase 5 work verified. App ready for Vercel deployment.*
+*Last updated: 2026-02-19 — Deployed to https://timely-cyan-three.vercel.app. All env vars set in Vercel. Resend domain verification pending before magic links reach non-owner emails.*
