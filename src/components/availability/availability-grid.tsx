@@ -58,12 +58,12 @@ export function AvailabilityGrid({ dates, dayStart, dayEnd }: AvailabilityGridPr
   }
 
   function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
-    // Capture pointer on the container so pointermove fires even when finger moves outside
-    e.currentTarget.setPointerCapture(e.pointerId)
-    isDragging.current = true
-
     const slotKey = getCellFromPoint(e.clientX, e.clientY)
     if (!slotKey) return
+
+    // Capture pointer only when painting — lets time-label touches scroll normally
+    e.currentTarget.setPointerCapture(e.pointerId)
+    isDragging.current = true
 
     // First cell touched determines add vs remove for the entire gesture
     dragMode.current = selectedSlots.has(slotKey) ? 'remove' : 'add'
@@ -83,7 +83,7 @@ export function AvailabilityGrid({ dates, dayStart, dayEnd }: AvailabilityGridPr
   return (
     <div className="overflow-x-auto">
       <div
-        className="touch-none select-none"
+        className="select-none"
         data-vaul-no-drag
         role="grid"
         aria-label="Availability grid — drag or tap to mark your available times"
