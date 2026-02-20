@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
   const magicUrl = buildMagicUrl(rawToken, eventId, baseUrl)
   const resend = new Resend(process.env.RESEND_API_KEY)
   await resend.emails.send({
-    from: 'Timely <noreply@timely.app>',
+    from: 'Timely <onboarding@resend.dev>',
     to: email,
     subject: `Your access link for ${event?.title ?? 'your event'}`,
     react: MagicLinkEmail({
