@@ -3,7 +3,7 @@ status: complete
 phase: 02-participant-identity-and-pin-system
 source: [02-01-SUMMARY.md, 02-02-SUMMARY.md, 02-03-SUMMARY.md, 02-04-SUMMARY.md, 02-05-SUMMARY.md]
 started: 2026-02-20T00:00:00Z
-updated: 2026-02-20T00:00:00Z
+updated: 2026-02-20T01:00:00Z
 ---
 
 ## Current Test
@@ -51,26 +51,17 @@ result: pass
 
 ### 9. Magic link email delivery and consumption
 expected: Using the email atunguye25@gmail.com (the only address that works on the free Resend tier), request a magic link. Open the email, click the link. You should be redirected back to the event page with a session — the "Welcome back, [Name]" CTA appears without entering a PIN. Clicking the same link again shows the "already used" error page.
-result: issue
-reported: "i don't see any mail sent to me, even in the spam section"
-severity: major
+result: pass
+note: Fixed by switching from: address to onboarding@resend.dev (commit 2bc975c)
 
 ## Summary
 
 total: 9
-passed: 8
-issues: 1
+passed: 9
+issues: 0
 pending: 0
 skipped: 0
 
 ## Gaps
 
-- truth: "Magic link email is delivered to the participant's inbox after requesting via Forgot PIN flow"
-  status: failed
-  reason: "User reported: i don't see any mail sent to me, even in the spam section"
-  severity: major
-  test: 9
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+[none — all tests passed]
