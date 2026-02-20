@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { db } from '@/lib/db'
 import { events } from '@/lib/schema'
@@ -14,7 +15,10 @@ export default async function ConfirmPage({ params }: Props) {
   const event = await db.query.events.findFirst({ where: eq(events.id, id) })
   if (!event) notFound()
 
-  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/e/${id}`
+  const headersList = await headers()
+  const host = headersList.get('host') ?? 'localhost:3000'
+  const protocol = host.startsWith('localhost') ? 'http' : 'https'
+  const eventUrl = `${protocol}://${host}/e/${id}`
 
   return (
     <main className="min-h-dvh flex items-center justify-center px-4 py-12">

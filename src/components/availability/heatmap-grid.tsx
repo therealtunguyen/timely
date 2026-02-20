@@ -92,7 +92,7 @@ export function HeatmapGrid({
         }}
       >
         {/* Header row: corner cell + date column headers */}
-        <div role="row">
+        <div role="row" style={{ display: 'contents' }}>
           <div role="columnheader" className="sticky left-0 z-20 bg-[#FAF8F5]" aria-label="Time" />
           {dates.map(date => (
             <div
@@ -118,7 +118,7 @@ export function HeatmapGrid({
           const timeLabel = `${label}–${endLabel}`
 
           return (
-            <div role="row" key={slotKey} aria-rowindex={rowIdx + 2}>
+            <div role="row" key={slotKey} aria-rowindex={rowIdx + 2} style={{ display: 'contents' }}>
               {/* Sticky time label */}
               <div role="rowheader" className="sticky left-0 z-10 bg-[#FAF8F5] text-xs text-[#6B6158] min-h-[44px] flex items-start pt-1 px-2 border-b border-[#E5DDD4]">
                 {label}

@@ -154,3 +154,18 @@ body {
     min-height: 100dvh;
   }
 }
+
+/* Make react-day-picker calendar span full width of its container */
+.rdp-root {
+  width: 100%;
+}
+.rdp-months {
+  width: 100%;
+}
+.rdp-month {
+  width: 100%;
+}
+.rdp-month_grid {
+  width: 100%;
+  table-layout: fixed;
+}

@@ -72,8 +72,11 @@ export async function POST(req: NextRequest) {
   })
 
   // Send email via Resend
-  // buildMagicUrl returns /api/participants/magic-link/consume?token=...&eventId=...
-  const magicUrl = buildMagicUrl(rawToken, eventId)
+  // Derive base URL from request headers — self-configuring across environments
+  const host = req.headers.get('host') ?? 'localhost:3000'
+  const protocol = host.startsWith('localhost') ? 'http' : 'https'
+  const baseUrl = `${protocol}://${host}`
+  const magicUrl = buildMagicUrl(rawToken, eventId, baseUrl)
   const resend = new Resend(process.env.RESEND_API_KEY)
   await resend.emails.send({
     from: 'Timely <noreply@timely.app>',

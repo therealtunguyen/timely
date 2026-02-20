@@ -17,9 +17,8 @@ export function generateMagicToken(): MagicTokenData {
   return { rawToken, tokenHash, expiresAt }
 }
 
-export function buildMagicUrl(rawToken: string, eventId: string): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? ''
-  return `${base}/api/participants/magic-link/consume?token=${rawToken}&eventId=${eventId}`
+export function buildMagicUrl(rawToken: string, eventId: string, baseUrl: string): string {
+  return `${baseUrl}/api/participants/magic-link/consume?token=${rawToken}&eventId=${eventId}`
 }
 
 /** Hash a raw token from URL params for DB lookup */
