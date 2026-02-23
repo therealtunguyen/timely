@@ -110,8 +110,8 @@ export function CreateEventForm() {
       />
       {/* Title */}
       <div className="space-y-2">
-        <Label htmlFor="title" className="text-sm font-medium text-[#1C1A17]">
-          Event title <span className="text-[#E8823A]">*</span>
+        <Label htmlFor="title" className="text-sm font-medium text-text-primary">
+          Event title <span className="text-brand">*</span>
         </Label>
         <Input
           id="title"
@@ -121,14 +121,14 @@ export function CreateEventForm() {
           onChange={(e) => setTitle(e.target.value)}
           maxLength={100}
           required
-          className="border-[#E5DDD4] focus:border-[#E8823A] focus:ring-[#E8823A]"
+          className="border-border-default focus:border-brand focus:ring-brand"
         />
       </div>
 
       {/* Description */}
       <div className="space-y-2">
-        <Label htmlFor="description" className="text-sm font-medium text-[#1C1A17]">
-          Description <span className="text-[#A89E94] font-normal">(optional)</span>
+        <Label htmlFor="description" className="text-sm font-medium text-text-primary">
+          Description <span className="text-text-disabled font-normal">(optional)</span>
         </Label>
         <Textarea
           id="description"
@@ -137,21 +137,21 @@ export function CreateEventForm() {
           onChange={(e) => setDescription(e.target.value)}
           maxLength={500}
           rows={3}
-          className="border-[#E5DDD4] focus:border-[#E8823A] focus:ring-[#E8823A] resize-none"
+          className="border-border-default focus:border-brand focus:ring-brand resize-none"
         />
       </div>
 
       {/* Date mode toggle */}
       <div className="space-y-3">
-        <Label className="text-sm font-medium text-[#1C1A17]">Date selection</Label>
+        <Label className="text-sm font-medium text-text-primary">Date selection</Label>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => setDateMode('specific_dates')}
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium border transition-colors ${
               dateMode === 'specific_dates'
-                ? 'bg-[#E8823A] text-white border-[#E8823A]'
-                : 'bg-white text-[#6B6158] border-[#E5DDD4] hover:border-[#E8823A]'
+                ? 'bg-brand text-white border-brand'
+                : 'bg-surface text-text-secondary border-border-default hover:border-brand'
             }`}
           >
             Specific dates
@@ -161,8 +161,8 @@ export function CreateEventForm() {
             onClick={() => setDateMode('date_range')}
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium border transition-colors ${
               dateMode === 'date_range'
-                ? 'bg-[#E8823A] text-white border-[#E8823A]'
-                : 'bg-white text-[#6B6158] border-[#E5DDD4] hover:border-[#E8823A]'
+                ? 'bg-brand text-white border-brand'
+                : 'bg-surface text-text-secondary border-border-default hover:border-brand'
             }`}
           >
             Date range
@@ -188,12 +188,12 @@ export function CreateEventForm() {
 
         {/* Selected dates feedback */}
         {dateMode === 'specific_dates' && specificDates.length > 0 && (
-          <p className="text-sm text-[#6B6158]">
+          <p className="text-sm text-text-secondary">
             {specificDates.length} date{specificDates.length !== 1 ? 's' : ''} selected
           </p>
         )}
         {dateMode === 'date_range' && dateRange?.from && dateRange?.to && (
-          <p className="text-sm text-[#6B6158]">
+          <p className="text-sm text-text-secondary">
             {dateRange.from.toLocaleDateString()} &ndash; {dateRange.to.toLocaleDateString()}
           </p>
         )}
@@ -201,22 +201,22 @@ export function CreateEventForm() {
 
       {/* Time window */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium text-[#1C1A17]">Available time window</Label>
+        <Label className="text-sm font-medium text-text-primary">Available time window</Label>
         <div className="flex items-center gap-3">
           <select
             value={dayStart}
             onChange={(e) => setDayStart(Number(e.target.value))}
-            className="flex-1 h-10 px-3 rounded-md border border-[#E5DDD4] bg-white text-sm text-[#1C1A17] focus:outline-none focus:border-[#E8823A]"
+            className="flex-1 h-10 px-3 rounded-md border border-border-default bg-surface text-sm text-text-primary focus:outline-none focus:border-brand"
           >
             {HOURS.slice(0, 23).map((h) => (
               <option key={h.value} value={h.value}>{h.label}</option>
             ))}
           </select>
-          <span className="text-[#6B6158] text-sm">to</span>
+          <span className="text-text-secondary text-sm">to</span>
           <select
             value={dayEnd}
             onChange={(e) => setDayEnd(Number(e.target.value))}
-            className="flex-1 h-10 px-3 rounded-md border border-[#E5DDD4] bg-white text-sm text-[#1C1A17] focus:outline-none focus:border-[#E8823A]"
+            className="flex-1 h-10 px-3 rounded-md border border-border-default bg-surface text-sm text-text-primary focus:outline-none focus:border-brand"
           >
             {HOURS.slice(1).map((h) => (
               <option key={h.value} value={h.value} disabled={h.value <= dayStart}>
@@ -225,7 +225,7 @@ export function CreateEventForm() {
             ))}
           </select>
         </div>
-        <p className="text-xs text-[#A89E94]">Timezone: {timezone}</p>
+        <p className="text-xs text-text-disabled">Timezone: {timezone}</p>
       </div>
 
       {/* Error */}
@@ -239,16 +239,16 @@ export function CreateEventForm() {
       <Button
         type="submit"
         disabled={!isValid || isSubmitting}
-        className="w-full bg-[#E8823A] hover:bg-[#D4722E] text-white font-medium py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-brand hover:bg-brand-hover text-white font-medium py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? 'Creating event...' : 'Create event'}
       </Button>
 
-      <p className="text-xs text-[#A89E94] text-center leading-relaxed">
+      <p className="text-xs text-text-disabled text-center leading-relaxed">
         Events and all responses expire automatically after 30 days. No accounts required.{' '}
         <Link
           href="/privacy"
-          className="underline underline-offset-2 hover:text-[#6B6158] focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-[#E8823A]"
+          className="underline underline-offset-2 hover:text-text-secondary focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-brand"
         >
           Privacy
         </Link>

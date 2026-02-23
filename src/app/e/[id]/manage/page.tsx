@@ -32,19 +32,19 @@ export default async function ManagePage({ params }: Props) {
           <div className="space-y-2">
             <Link
               href={`/e/${id}`}
-              className="text-sm text-[#A89E94] hover:text-[#6B6158] focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-[#E8823A]"
+              className="text-sm text-text-disabled hover:text-text-secondary focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-brand"
             >
               ← Back to event
             </Link>
-            <h1 className="text-2xl font-semibold text-[#1C1A17]">Manage event</h1>
+            <h1 className="text-2xl font-semibold text-text-primary">Manage event</h1>
           </div>
-          <div className="rounded-xl border border-[#E5DDD4] bg-white px-5 py-6 space-y-3">
-            <p className="text-[#1C1A17] font-medium">Manage access isn&apos;t available</p>
-            <p className="text-[#6B6158] text-sm leading-relaxed">
+          <div className="rounded-xl border border-border-default bg-white px-5 py-6 space-y-3">
+            <p className="text-text-primary font-medium">Manage access isn&apos;t available</p>
+            <p className="text-text-secondary text-sm leading-relaxed">
               This browser doesn&apos;t have creator access for this event. If you&apos;ve cleared
               your cookies or switched devices, your manage access is gone for this event.
             </p>
-            <p className="text-[#6B6158] text-sm leading-relaxed">
+            <p className="text-text-secondary text-sm leading-relaxed">
               Events expire automatically in 30 days — no action required.
             </p>
           </div>
@@ -59,19 +59,19 @@ export default async function ManagePage({ params }: Props) {
         <div className="space-y-2">
           <Link
             href={`/e/${id}`}
-            className="text-sm text-[#A89E94] hover:text-[#6B6158] focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-[#E8823A]"
+            className="text-sm text-text-disabled hover:text-text-secondary focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-brand"
           >
             ← Back to event
           </Link>
-          <h1 className="text-2xl font-semibold text-[#1C1A17]">Manage event</h1>
-          <p className="text-[#6B6158]">{event.title}</p>
+          <h1 className="text-2xl font-semibold text-text-primary">Manage event</h1>
+          <p className="text-text-secondary">{event.title}</p>
         </div>
 
         {/* Delete section */}
         <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-6 space-y-4">
           <div className="space-y-1">
-            <p className="text-[#1C1A17] font-medium">Delete this event</p>
-            <p className="text-[#6B6158] text-sm leading-relaxed">
+            <p className="text-text-primary font-medium">Delete this event</p>
+            <p className="text-text-secondary text-sm leading-relaxed">
               Permanently removes the event and all responses. This cannot be undone.
             </p>
           </div>
@@ -79,7 +79,7 @@ export default async function ManagePage({ params }: Props) {
         </div>
 
         {/* Cookie loss disclaimer — per user decision */}
-        <p className="text-xs text-[#A89E94] leading-relaxed">
+        <p className="text-xs text-text-disabled leading-relaxed">
           This page is only accessible from the browser where you created the event.
           If you lose access, the event will still expire automatically in 30 days.
         </p>

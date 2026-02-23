@@ -101,16 +101,16 @@ export function NameSheet({
     <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent className="max-h-[90vh]">
         <DrawerHeader className="text-left px-6 pt-6">
-          <DrawerTitle className="text-xl font-semibold text-[#1C1A17]">
+          <DrawerTitle className="text-xl font-semibold text-text-primary">
             {flow === 'new' ? "What's your name?" : 'Enter your name to continue'}
           </DrawerTitle>
           {flow === 'new' && existingNames.length > 0 && (
-            <DrawerDescription className="text-[#6B6158] mt-1">
+            <DrawerDescription className="text-text-secondary mt-1">
               Already joined: {existingNames.join(', ')}
             </DrawerDescription>
           )}
           {flow === 'returning' && (
-            <DrawerDescription className="text-[#6B6158] mt-1">
+            <DrawerDescription className="text-text-secondary mt-1">
               Enter the name you used when you first joined.
             </DrawerDescription>
           )}
@@ -140,7 +140,7 @@ export function NameSheet({
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-[#E5DDD4] text-[#1C1A17]"
+                className="w-full border-border-default text-text-primary"
                 onClick={() => onNameExists(takenName)}
               >
                 Edit as {takenName} instead
@@ -151,7 +151,7 @@ export function NameSheet({
           <Button
             type="submit"
             disabled={!name.trim() || loading}
-            className="w-full bg-[#E8823A] hover:bg-[#D4722E] text-white"
+            className="w-full bg-brand hover:bg-brand-hover text-white"
           >
             {loading ? 'Checking…' : 'Continue'}
           </Button>

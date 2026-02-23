@@ -134,10 +134,10 @@ export function AvailabilityDrawer({
       <Drawer.Trigger asChild>{trigger}</Drawer.Trigger>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed inset-0 z-50 flex flex-col bg-[#FAF8F5] md:left-auto md:right-0 md:inset-y-0 md:w-[480px]">
+        <Drawer.Content className="fixed inset-0 z-50 flex flex-col bg-page-bg md:left-auto md:right-0 md:inset-y-0 md:w-[480px]">
           {/* Drag handle pill — auto-renders for direction=bottom, render manually for right */}
           {direction === 'bottom' && (
-            <div className="mx-auto mt-3 mb-1 h-1.5 w-12 rounded-full bg-[#D4C9BD]" />
+            <div className="mx-auto mt-3 mb-1 h-1.5 w-12 rounded-full bg-border-strong" />
           )}
 
           {/* Visually hidden title for screen reader accessibility (Radix Dialog requirement) */}
@@ -148,8 +148,8 @@ export function AvailabilityDrawer({
           {/* Header: close button only — locked decision: no title */}
           <div className="flex items-center justify-between px-4 py-3">
             <Drawer.Close asChild>
-              <button className="p-2 rounded-lg hover:bg-[#E5DDD4] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8823A] focus-visible:ring-offset-2" aria-label="Close">
-                <X className="h-5 w-5 text-[#6B6158]" />
+              <button className="p-2 rounded-lg hover:bg-border-default transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2" aria-label="Close">
+                <X className="h-5 w-5 text-text-secondary" />
               </button>
             </Drawer.Close>
             {/* Timezone selector — right side of header, muted */}
@@ -166,11 +166,11 @@ export function AvailabilityDrawer({
           </div>
 
           {/* Footer: Save button */}
-          <div className="px-4 py-4 border-t border-[#E5DDD4]">
+          <div className="px-4 py-4 border-t border-border-default">
             <button
               onClick={handleExplicitSave}
               disabled={!dirty || isSaving}
-              className="w-full bg-[#E8823A] hover:bg-[#D4722E] disabled:bg-[#E5DDD4] disabled:text-[#9D9086] text-white font-medium py-3 px-6 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8823A] focus-visible:ring-offset-2"
+              className="w-full bg-brand hover:bg-brand-hover disabled:bg-border-default disabled:text-text-disabled text-white font-medium py-3 px-6 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
             >
               {isSaving ? 'Saving...' : 'Save availability'}
             </button>

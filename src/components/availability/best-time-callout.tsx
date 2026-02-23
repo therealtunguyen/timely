@@ -19,9 +19,9 @@ export function BestTimeCallout({
   // Empty state: no responses yet or count is 0
   if (!bestSlot || bestSlot.count === 0) {
     return (
-      <div className="rounded-2xl border border-[#E5DDD4] bg-[#FAF8F5] px-5 py-4">
-        <p className="text-sm font-medium text-[#6B6158] mb-0.5">Best time</p>
-        <p className="text-[#9D9086] text-base">Waiting for responses</p>
+      <div className="rounded-2xl border border-border-default bg-page-bg px-5 py-4">
+        <p className="text-sm font-medium text-text-secondary mb-0.5">Best time</p>
+        <p className="text-text-disabled text-base">Waiting for responses</p>
       </div>
     )
   }
@@ -37,10 +37,10 @@ export function BestTimeCallout({
   return (
     <div
       className={cn(
-        'rounded-2xl border bg-[#FAF8F5] px-5 py-4 space-y-1',
+        'rounded-2xl border bg-page-bg px-5 py-4 space-y-1',
         isInteractive
-          ? 'border-[#E8823A] cursor-pointer active:bg-[#F3EFE9] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8823A] focus-visible:ring-offset-2'
-          : 'border-[#E5DDD4]'
+          ? 'border-brand cursor-pointer active:bg-surface-subtle transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2'
+          : 'border-border-default'
       )}
       onClick={isInteractive ? onConfirmClick : undefined}
       onKeyDown={isInteractive ? (e) => {
@@ -53,11 +53,11 @@ export function BestTimeCallout({
       aria-label={isInteractive ? 'Tap to confirm this time' : undefined}
       tabIndex={isInteractive ? 0 : undefined}
     >
-      <p className="text-sm font-medium text-[#6B6158]">Best time</p>
-      <p className="text-xl font-semibold text-[#1C1A17]">{dateStr}</p>
-      <p className="text-base text-[#4A4035]">{timeRangeStr}</p>
-      <p className="text-sm text-[#E8823A] font-medium">{bestSlot.count} of {totalParticipants} people free</p>
-      {isCreator && <p className="text-xs text-[#9D9086] mt-1">Tap to confirm &rarr;</p>}
+      <p className="text-sm font-medium text-text-secondary">Best time</p>
+      <p className="text-xl font-semibold text-text-primary">{dateStr}</p>
+      <p className="text-base text-text-secondary">{timeRangeStr}</p>
+      <p className="text-sm text-brand font-medium">{bestSlot.count} of {totalParticipants} people free</p>
+      {isCreator && <p className="text-xs text-text-disabled mt-1">Tap to confirm &rarr;</p>}
     </div>
   )
 }

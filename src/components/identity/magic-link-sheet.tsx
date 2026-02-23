@@ -79,10 +79,10 @@ export function MagicLinkSheet({
     <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent className="max-h-[90vh]">
         <DrawerHeader className="text-left px-6 pt-6">
-          <DrawerTitle className="text-xl font-semibold text-[#1C1A17]">
+          <DrawerTitle className="text-xl font-semibold text-text-primary">
             Get a magic link
           </DrawerTitle>
-          <DrawerDescription className="text-[#6B6158] mt-1">
+          <DrawerDescription className="text-text-secondary mt-1">
             Enter the email you used when joining. We&apos;ll send a link that lets you back in.
           </DrawerDescription>
         </DrawerHeader>
@@ -113,7 +113,7 @@ export function MagicLinkSheet({
           <Button
             type="submit"
             disabled={!email.trim() || loading}
-            className="w-full bg-[#E8823A] hover:bg-[#D4720E] text-white"
+            className="w-full bg-brand hover:bg-brand-hover text-white"
           >
             {loading ? 'Sending\u2026' : 'Send magic link'}
           </Button>

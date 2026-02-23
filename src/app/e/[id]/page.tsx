@@ -170,11 +170,11 @@ export default async function EventPage({ params }: Props) {
       <div className="max-w-lg mx-auto space-y-6">
         {/* Event header */}
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold text-[#1C1A17] leading-tight">
+          <h1 className="text-2xl font-semibold text-text-primary leading-tight">
             {event.title}
           </h1>
           {event.description && (
-            <p className="text-[#6B6158] text-base leading-relaxed">
+            <p className="text-text-secondary text-base leading-relaxed">
               {event.description}
             </p>
           )}
@@ -182,7 +182,7 @@ export default async function EventPage({ params }: Props) {
           {isCreator && (
             <Link
               href={`/e/${id}/manage`}
-              className="inline-block text-xs text-[#A89E94] hover:text-[#6B6158] underline underline-offset-2 focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-[#E8823A]"
+              className="inline-block text-xs text-text-disabled hover:text-text-secondary underline underline-offset-2 focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-brand"
             >
               Manage event
             </Link>
@@ -191,7 +191,7 @@ export default async function EventPage({ params }: Props) {
 
         {/* Confirmed time banner (shown above heatmap when event is confirmed) */}
         {event.status === 'confirmed' && event.confirmedSlot && (
-          <section className="rounded-2xl bg-[#E8823A] px-5 py-4 space-y-1">
+          <section className="rounded-2xl bg-brand px-5 py-4 space-y-1">
             <p className="text-sm font-medium text-white/80">Meeting confirmed</p>
             <p className="text-xl font-semibold text-white">
               {format(event.confirmedSlot, 'EEEE, MMMM d')}
@@ -233,7 +233,7 @@ export default async function EventPage({ params }: Props) {
 
         {/* Candidate dates / date range */}
         <section className="space-y-3">
-          <h2 className="text-sm font-medium text-[#6B6158] uppercase tracking-wide">
+          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide">
             Candidate dates
           </h2>
           {event.dateMode === 'specific_dates' ? (
@@ -241,19 +241,19 @@ export default async function EventPage({ params }: Props) {
               {candidateDates.map((date) => (
                 <li
                   key={date}
-                  className="flex items-center gap-3 rounded-xl border border-[#E5DDD4] bg-white px-4 py-3"
+                  className="flex items-center gap-3 rounded-xl border border-border-default bg-white px-4 py-3"
                 >
-                  <span className="text-[#E8823A] text-lg">📅</span>
-                  <span className="font-medium text-[#1C1A17]">
+                  <span className="text-brand text-lg">📅</span>
+                  <span className="font-medium text-text-primary">
                     {format(parseISO(date), 'EEEE, MMMM d, yyyy')}
                   </span>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className="rounded-xl border border-[#E5DDD4] bg-white px-4 py-3 flex items-center gap-3">
-              <span className="text-[#E8823A] text-lg">📅</span>
-              <span className="font-medium text-[#1C1A17]">
+            <div className="rounded-xl border border-border-default bg-white px-4 py-3 flex items-center gap-3">
+              <span className="text-brand text-lg">📅</span>
+              <span className="font-medium text-text-primary">
                 {event.rangeStart && event.rangeEnd
                   ? `${format(event.rangeStart, 'MMMM d')} \u2013 ${format(event.rangeEnd, 'MMMM d, yyyy')}`
                   : 'Date range TBD'}
@@ -263,11 +263,11 @@ export default async function EventPage({ params }: Props) {
         </section>
 
         {/* Time window */}
-        <section className="rounded-xl border border-[#E5DDD4] bg-[#F3EFE9] px-4 py-3 flex items-center gap-3">
-          <span className="text-[#E8823A]">🕐</span>
-          <p className="text-sm text-[#6B6158]">
+        <section className="rounded-xl border border-border-default bg-surface-subtle px-4 py-3 flex items-center gap-3">
+          <span className="text-brand">🕐</span>
+          <p className="text-sm text-text-secondary">
             Available window:{' '}
-            <span className="font-medium text-[#1C1A17]">
+            <span className="font-medium text-text-primary">
               {formatHour(event.dayStart)} – {formatHour(event.dayEnd)}
             </span>
           </p>

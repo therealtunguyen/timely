@@ -1,13 +1,19 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Work_Sans, Outfit } from 'next/font/google'
 import './globals.css'
 import Link from 'next/link'
 import { Toaster } from '@/components/ui/sonner'
 import { FlashToast } from '@/components/flash-toast'
 
-const inter = Inter({
+const workSans = Work_Sans({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-display',
+  display: 'swap',
+})
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  variable: '--font-sans',
   display: 'swap',
 })
 
@@ -21,15 +27,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${workSans.variable} ${outfit.variable}`}>
       <body className="antialiased flex flex-col min-h-dvh">
         <div className="flex-1">
           {children}
         </div>
-        <footer className="px-4 py-6 text-center border-t border-[#E5DDD4]">
+        <footer className="px-4 py-6 text-center border-t border-border-default">
           <Link
             href="/privacy"
-            className="text-xs text-[#A89E94] hover:text-[#6B6158] underline underline-offset-2 focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-[#E8823A]"
+            className="text-xs text-text-disabled hover:text-text-secondary underline underline-offset-2 focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-brand"
           >
             Privacy
           </Link>

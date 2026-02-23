@@ -122,16 +122,16 @@ export function PinSheet({
     <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent className="max-h-[90vh]">
         <DrawerHeader className="text-left px-6 pt-6">
-          <DrawerTitle className="text-xl font-semibold text-[#1C1A17]">
+          <DrawerTitle className="text-xl font-semibold text-text-primary">
             {mode === 'setup' ? 'Set a 4-digit PIN' : 'Enter your PIN'}
           </DrawerTitle>
           {mode === 'setup' && (
-            <DrawerDescription className="text-[#6B6158] mt-1">
+            <DrawerDescription className="text-text-secondary mt-1">
               You&apos;ll use this to edit later
             </DrawerDescription>
           )}
           {mode === 'verify' && (
-            <DrawerDescription className="text-[#6B6158] mt-1">
+            <DrawerDescription className="text-text-secondary mt-1">
               Welcome back! Enter your PIN to continue.
             </DrawerDescription>
           )}
@@ -153,19 +153,19 @@ export function PinSheet({
                 <InputOTPGroup className="gap-3">
                   <InputOTPSlot
                     index={0}
-                    className="w-14 h-14 text-xl border-2 border-[#E5DDD4] rounded-xl text-center focus:border-[#E8823A] focus:ring-0"
+                    className="w-14 h-14 text-xl border-2 border-border-default rounded-xl text-center focus:border-brand focus:ring-0"
                   />
                   <InputOTPSlot
                     index={1}
-                    className="w-14 h-14 text-xl border-2 border-[#E5DDD4] rounded-xl text-center focus:border-[#E8823A] focus:ring-0"
+                    className="w-14 h-14 text-xl border-2 border-border-default rounded-xl text-center focus:border-brand focus:ring-0"
                   />
                   <InputOTPSlot
                     index={2}
-                    className="w-14 h-14 text-xl border-2 border-[#E5DDD4] rounded-xl text-center focus:border-[#E8823A] focus:ring-0"
+                    className="w-14 h-14 text-xl border-2 border-border-default rounded-xl text-center focus:border-brand focus:ring-0"
                   />
                   <InputOTPSlot
                     index={3}
-                    className="w-14 h-14 text-xl border-2 border-[#E5DDD4] rounded-xl text-center focus:border-[#E8823A] focus:ring-0"
+                    className="w-14 h-14 text-xl border-2 border-border-default rounded-xl text-center focus:border-brand focus:ring-0"
                   />
                 </InputOTPGroup>
               </InputOTP>
@@ -185,7 +185,7 @@ export function PinSheet({
               <button
                 type="button"
                 onClick={onForgotPin}
-                className="text-[#E8823A] underline underline-offset-2"
+                className="text-brand underline underline-offset-2"
               >
                 Forgot PIN?
               </button>
@@ -195,7 +195,7 @@ export function PinSheet({
           <Button
             type="submit"
             disabled={pin.length !== 4 || loading}
-            className="w-full bg-[#E8823A] hover:bg-[#D4722E] text-white"
+            className="w-full bg-brand hover:bg-brand-hover text-white"
           >
             {loading
               ? mode === 'setup' ? 'Setting PIN\u2026' : 'Verifying\u2026'

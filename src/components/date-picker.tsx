@@ -27,7 +27,7 @@ export function DatePicker(props: DatePickerProps) {
         selected={props.selected}
         onSelect={props.onSelect}
         disabled={{ before: today }}
-        className="rounded-lg border border-[#E5DDD4] p-3 bg-white"
+        className="rounded-lg border border-border-default p-3 bg-surface"
         numberOfMonths={1}
       />
     )
@@ -39,7 +39,7 @@ export function DatePicker(props: DatePickerProps) {
       selected={props.selected}
       onSelect={props.onSelect}
       disabled={{ before: today }}
-      className="rounded-lg border border-[#E5DDD4] p-3 bg-white"
+      className="rounded-lg border border-border-default p-3 bg-surface"
       numberOfMonths={1}
       max={14}
     />

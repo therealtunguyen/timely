@@ -31,7 +31,7 @@ export function CopyLinkButton({ url }: CopyLinkButtonProps) {
   return (
     <Button
       onClick={handleCopy}
-      className="w-full bg-[#E8823A] hover:bg-[#D4722E] text-white font-medium py-3 rounded-lg"
+      className="w-full bg-brand hover:bg-brand-hover text-white font-medium py-3 rounded-lg"
     >
       {copied ? 'Link copied!' : 'Copy link'}
     </Button>

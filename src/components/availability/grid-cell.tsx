@@ -42,7 +42,7 @@ export function GridCell({
         data-slot-key={slotKey}
         animate={{ opacity: dimmed ? 0.2 : 1 }}
         transition={{ duration: 0.15 }}
-        className="relative min-h-[44px] min-w-[44px] border-b border-r border-[#E5DDD4] select-none"
+        className="relative min-h-[44px] min-w-[44px] border-b border-r border-border-default select-none"
         style={{ backgroundColor: heatmapColor }}
         aria-label={ariaLabel}
         role="gridcell"
@@ -61,10 +61,10 @@ export function GridCell({
     <div
       data-slot-key={slotKey}
       className={cn(
-        'min-h-[44px] min-w-[44px] border-b border-r border-[#E5DDD4] select-none touch-none cursor-pointer',
+        'min-h-[44px] min-w-[44px] border-b border-r border-border-default select-none touch-none cursor-pointer',
         isSelected
-          ? 'bg-[#E8823A] border-[#D4722E]'
-          : 'bg-white hover:bg-[#F3EFE9]'
+          ? 'bg-brand border-brand-hover'
+          : 'bg-white hover:bg-surface-subtle'
       )}
     />
   )

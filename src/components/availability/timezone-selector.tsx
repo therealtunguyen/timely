@@ -12,7 +12,7 @@ export function TimezoneSelector() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="text-xs text-[#6B6158] underline cursor-pointer bg-transparent border-none p-0"
+        className="text-xs text-text-secondary underline cursor-pointer bg-transparent border-none p-0"
       >
         Wrong timezone? (detected: {timezone || 'unknown'})
       </button>
@@ -21,14 +21,14 @@ export function TimezoneSelector() {
 
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-xs text-[#9E958B]">Changing timezone clears your selections</p>
+      <p className="text-xs text-text-disabled">Changing timezone clears your selections</p>
       <select
         value={timezone}
         onChange={(e) => {
           setTimezone(e.target.value)
           setIsOpen(false)
         }}
-        className="text-xs text-[#3D3530] border border-[#E5DDD4] rounded px-2 py-1 bg-white"
+        className="text-xs text-text-secondary border border-border-default rounded px-2 py-1 bg-surface"
       >
         {(Intl.supportedValuesOf('timeZone') as string[]).map((tz) => (
           <option key={tz} value={tz}>

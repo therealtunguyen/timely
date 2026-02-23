@@ -34,7 +34,7 @@ export function DeleteEventButton({ eventId }: DeleteEventButtonProps) {
         <Button
           variant="destructive"
           disabled={isPending}
-          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8823A] focus-visible:ring-offset-2"
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
         >
           {isPending ? 'Deleting...' : 'Delete event'}
         </Button>

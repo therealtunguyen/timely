@@ -50,19 +50,19 @@ export function ConfirmTimeSheet({
     <Drawer.Root open={open} onOpenChange={onOpenChange} direction="bottom">
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40" />
-        <Drawer.Content className="fixed bottom-0 left-0 right-0 rounded-t-2xl bg-[#FAF8F5] p-6 space-y-5">
+        <Drawer.Content className="fixed bottom-0 left-0 right-0 rounded-t-2xl bg-page-bg p-6 space-y-5">
           {/* Drag handle */}
-          <div className="mx-auto -mt-2 mb-2 h-1.5 w-12 rounded-full bg-[#D4C9BD]" />
+          <div className="mx-auto -mt-2 mb-2 h-1.5 w-12 rounded-full bg-border-strong" />
 
-          <Drawer.Title className="text-xl font-semibold text-[#1C1A17]">
+          <Drawer.Title className="text-xl font-semibold text-text-primary">
             Confirm this time?
           </Drawer.Title>
 
           {/* Slot details */}
-          <div className="rounded-xl border border-[#E5DDD4] bg-white px-4 py-4 space-y-1">
-            <p className="text-lg font-medium text-[#1C1A17]">{dateStr}</p>
-            <p className="text-base text-[#4A4035]">{timeRangeStr}</p>
-            <p className="text-sm text-[#E8823A] font-medium mt-2">
+          <div className="rounded-xl border border-border-default bg-surface px-4 py-4 space-y-1">
+            <p className="text-lg font-medium text-text-primary">{dateStr}</p>
+            <p className="text-base text-text-secondary">{timeRangeStr}</p>
+            <p className="text-sm text-brand font-medium mt-2">
               {slotCount} of {totalParticipants} people free
             </p>
           </div>
@@ -70,10 +70,10 @@ export function ConfirmTimeSheet({
           {/* Free participant names */}
           {freeNames.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-medium text-[#9D9086] uppercase tracking-wide">
+              <p className="text-xs font-medium text-text-disabled uppercase tracking-wide">
                 Free at this time
               </p>
-              <p className="text-sm text-[#4A4035]">{freeNames.join(', ')}</p>
+              <p className="text-sm text-text-secondary">{freeNames.join(', ')}</p>
             </div>
           )}
 
@@ -81,7 +81,7 @@ export function ConfirmTimeSheet({
           <button
             onClick={handleConfirm}
             disabled={isConfirming}
-            className="w-full bg-[#E8823A] hover:bg-[#D4722E] disabled:bg-[#E5DDD4] disabled:text-[#9D9086] text-white font-semibold py-3.5 rounded-xl transition-colors"
+            className="w-full bg-brand hover:bg-brand-hover disabled:bg-border-default disabled:text-text-disabled text-white font-semibold py-3.5 rounded-xl transition-colors"
           >
             {isConfirming ? 'Confirming...' : 'Confirm this time'}
           </button>
@@ -89,7 +89,7 @@ export function ConfirmTimeSheet({
           {/* Cancel */}
           <button
             onClick={() => onOpenChange(false)}
-            className="w-full text-center text-sm text-[#9D9086] py-1"
+            className="w-full text-center text-sm text-text-disabled py-1"
           >
             Cancel
           </button>

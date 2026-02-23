@@ -26,21 +26,21 @@ export default async function ConfirmPage({ params }: Props) {
         {/* Success indicator */}
         <div className="text-center space-y-2">
           <div className="text-4xl">🎉</div>
-          <h1 className="text-2xl font-semibold text-[#1C1A17]">Event created!</h1>
-          <p className="text-[#6B6158]">Share this link so people can mark their availability.</p>
+          <h1 className="text-2xl font-semibold text-text-primary">Event created!</h1>
+          <p className="text-text-secondary">Share this link so people can mark their availability.</p>
         </div>
 
         {/* Event summary */}
-        <div className="rounded-xl border border-[#E5DDD4] bg-white p-5 space-y-1">
-          <p className="font-medium text-[#1C1A17]">{event.title}</p>
+        <div className="rounded-xl border border-border-default bg-white p-5 space-y-1">
+          <p className="font-medium text-text-primary">{event.title}</p>
           {event.description && (
-            <p className="text-sm text-[#6B6158]">{event.description}</p>
+            <p className="text-sm text-text-secondary">{event.description}</p>
           )}
         </div>
 
         {/* Copyable link */}
         <div className="space-y-3">
-          <div className="rounded-lg border border-[#E5DDD4] bg-[#F3EFE9] px-4 py-3 font-mono text-sm text-[#1C1A17] break-all">
+          <div className="rounded-lg border border-border-default bg-surface-subtle px-4 py-3 font-mono text-sm text-text-primary break-all">
             {eventUrl}
           </div>
           <CopyLinkButton url={eventUrl} />
@@ -50,7 +50,7 @@ export default async function ConfirmPage({ params }: Props) {
         <div className="text-center">
           <a
             href={`/e/${id}`}
-            className="text-sm text-[#E8823A] hover:text-[#D4722E] underline underline-offset-2"
+            className="text-sm text-brand hover:text-brand-hover underline underline-offset-2"
           >
             View event page &rarr;
           </a>

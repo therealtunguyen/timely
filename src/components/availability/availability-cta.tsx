@@ -33,7 +33,7 @@ export function AvailabilityCTA({
       dayEnd={dayEnd}
       dateMode={dateMode}
       trigger={
-        <button className="block w-full text-center bg-[#E8823A] hover:bg-[#D4722E] text-white font-medium py-3 px-6 rounded-lg transition-colors">
+        <button className="block w-full text-center bg-brand hover:bg-brand-hover text-white font-medium py-3 px-6 rounded-lg transition-colors">
           {label}
         </button>
       }

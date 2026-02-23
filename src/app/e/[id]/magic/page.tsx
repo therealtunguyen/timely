@@ -34,10 +34,10 @@ export default async function MagicLinkErrorPage({ params, searchParams }: Props
     <main className="min-h-dvh px-4 py-10">
       <div className="max-w-lg mx-auto space-y-6 text-center">
         <div className="space-y-3">
-          <h1 className="text-2xl font-semibold text-[#1C1A17]">
+          <h1 className="text-2xl font-semibold text-text-primary">
             {state.heading}
           </h1>
-          <p className="text-[#6B6158] leading-relaxed">
+          <p className="text-text-secondary leading-relaxed">
             {state.body}
           </p>
         </div>
@@ -45,12 +45,12 @@ export default async function MagicLinkErrorPage({ params, searchParams }: Props
         {/* CTA to go back and request a new magic link */}
         <Link
           href={`/e/${id}`}
-          className="block w-full text-center bg-[#E8823A] hover:bg-[#D4722E] text-white font-medium py-3 px-6 rounded-lg transition-colors"
+          className="block w-full text-center bg-brand hover:bg-brand-hover text-white font-medium py-3 px-6 rounded-lg transition-colors"
         >
           {state.cta}
         </Link>
 
-        <p className="text-sm text-[#A89E94]">
+        <p className="text-sm text-text-disabled">
           You&apos;ll be taken back to the event page where you can request a new link.
         </p>
       </div>

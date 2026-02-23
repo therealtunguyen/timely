@@ -93,13 +93,13 @@ export function HeatmapGrid({
       >
         {/* Header row: corner cell + date column headers */}
         <div role="row" style={{ display: 'contents' }}>
-          <div role="columnheader" className="sticky left-0 z-20 bg-[#FAF8F5]" aria-label="Time" />
+          <div role="columnheader" className="sticky left-0 z-20 bg-page-bg" aria-label="Time" />
           {dates.map(date => (
             <div
               key={date}
               role="columnheader"
               aria-label={formatDate(parseISO(date), 'EEEE, MMMM d')}
-              className="text-center text-xs font-medium text-[#6B6158] py-2 border-b border-[#E5DDD4] whitespace-pre-line"
+              className="text-center text-xs font-medium text-text-secondary py-2 border-b border-border-default whitespace-pre-line"
             >
               {format(parseISO(date), 'EEE\nMMM d')}
             </div>
@@ -120,7 +120,7 @@ export function HeatmapGrid({
           return (
             <div role="row" key={slotKey} aria-rowindex={rowIdx + 2} style={{ display: 'contents' }}>
               {/* Sticky time label */}
-              <div role="rowheader" className="sticky left-0 z-10 bg-[#FAF8F5] text-xs text-[#6B6158] min-h-[44px] flex items-start pt-1 px-2 border-b border-[#E5DDD4]">
+              <div role="rowheader" className="sticky left-0 z-10 bg-page-bg text-xs text-text-secondary min-h-[44px] flex items-start pt-1 px-2 border-b border-border-default">
                 {label}
               </div>
 

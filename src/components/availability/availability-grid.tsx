@@ -98,13 +98,13 @@ export function AvailabilityGrid({ dates, dayStart, dayEnd }: AvailabilityGridPr
         onPointerCancel={handlePointerUp}
       >
         {/* Top-left corner cell (empty, sticky) */}
-        <div className="sticky left-0 z-20 bg-[#FAF8F5]" />
+        <div className="sticky left-0 z-20 bg-page-bg" />
 
         {/* Date column headers */}
         {dates.map(date => (
           <div
             key={date}
-            className="text-center text-xs font-medium text-[#6B6158] py-2 border-b border-[#E5DDD4] whitespace-pre-line"
+            className="text-center text-xs font-medium text-text-secondary py-2 border-b border-border-default whitespace-pre-line"
           >
             {format(parseISO(date), 'EEE\nMMM d')}
           </div>
@@ -114,7 +114,7 @@ export function AvailabilityGrid({ dates, dayStart, dayEnd }: AvailabilityGridPr
         {slotRows.map(({ slotKey, label, hour, minute }) => (
           <React.Fragment key={slotKey}>
             {/* Sticky time label */}
-            <div className="sticky left-0 z-10 bg-[#FAF8F5] text-xs text-[#6B6158] min-h-[44px] flex items-start pt-1 px-2 border-b border-[#E5DDD4]">
+            <div className="sticky left-0 z-10 bg-page-bg text-xs text-text-secondary min-h-[44px] flex items-start pt-1 px-2 border-b border-border-default">
               {label}
             </div>
             {/* Cells across all date columns */}

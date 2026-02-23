@@ -1,5 +1,5 @@
-export const HEATMAP_LIGHT = '#FAF7F4'
-export const HEATMAP_DARK = '#7C4A0E'
+export const HEATMAP_LIGHT = '#f1f5f9'
+export const HEATMAP_DARK = '#4338ca'
 
 function hexToRgb(hex: string): [number, number, number] {
   return [
@@ -24,8 +24,8 @@ function lerpColor(from: string, to: string, t: number): string {
  * Uses sqrt interpolation for perceptual spread — makes 2 people vs 3 people visually distinct
  * even when the peak is 10. Without sqrt, low counts look identical (all near-white).
  *
- * count=0 → HEATMAP_LIGHT (#FAF7F4, empty/off-white)
- * count=peak → HEATMAP_DARK (#7C4A0E, darkest amber)
+ * count=0 → HEATMAP_LIGHT (#f1f5f9, empty/slate)
+ * count=peak → HEATMAP_DARK (#4338ca, deepest indigo)
  */
 export function slotColor(count: number, peak: number): string {
   if (count <= 0 || peak <= 0) return HEATMAP_LIGHT
