@@ -1,32 +1,37 @@
-import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import Link from 'next/link'
-import { db } from '@/lib/db'
-import { events, eventDates, participants, availability } from '@/lib/schema'
-import { count, desc, eq } from 'drizzle-orm'
-import { cookies } from 'next/headers'
-import { eachDayOfInterval, format, addMinutes, parseISO } from 'date-fns'
-import { getSession } from '@/lib/auth'
-import { ParticipantActions } from '@/components/identity/participant-actions'
-import { AvailabilityCTA } from '@/components/availability/availability-cta'
-import { HeatmapGrid } from '@/components/availability/heatmap-grid'
-import { ParticipantList } from '@/components/availability/participant-list'
-import { HeatmapResultsClient } from '@/components/availability/heatmap-results-client'
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { db } from "@/lib/db";
+import { events } from "@/lib/schema";
+import { eq } from "drizzle-orm";
+import { cookies } from "next/headers";
+import { format, addMinutes } from "date-fns";
+import { getEventDashboardData } from "@/lib/event-data";
+import { ParticipantActions } from "@/components/identity/participant-actions";
+import { FloatingUserToolbar } from "@/components/availability/floating-user-toolbar";
+import { HeatmapGrid } from "@/components/availability/heatmap-grid";
+import { ParticipantList } from "@/components/availability/participant-list";
+import { HeatmapResultsClient } from "@/components/availability/heatmap-results-client";
+import { SuggestedTimes } from "@/components/availability/suggested-times";
+import { DashboardContainer } from "@/components/layout/dashboard-container";
+import { Panel, PanelTitle } from "@/components/layout/panel";
+import { CalendarDays, Clock, Globe, Settings } from "lucide-react";
 
-type Props = { params: Promise<{ id: string }> }
+type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params
+  const { id } = await params;
 
   const event = await db.query.events.findFirst({
     where: eq(events.id, id),
-  })
+  });
 
   if (!event) {
-    return { title: 'Event not found' }
+    return { title: "Event not found" };
   }
 
-  const description = event.description ?? `Join ${event.title} — mark your availability`
+  const description =
+    event.description ?? `Join ${event.title} — mark your availability`;
 
   return {
     title: event.title,
@@ -34,274 +39,193 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: event.title,
       description,
-      type: 'website',
-      // The opengraph-image.tsx file in the same directory automatically provides the og:image URL.
-      // No need to set images here — Next.js file convention handles it.
+      type: "website",
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title: event.title,
       description,
     },
-  }
+  };
 }
 
 export default async function EventPage({ params }: Props) {
-  const { id } = await params
+  const { id } = await params;
 
-  // Fetch event
-  const event = await db.query.events.findFirst({
-    where: eq(events.id, id),
-  })
-  if (!event) notFound()
+  const cookieStore = await cookies();
+  const creatorCookieValue = cookieStore.get(`timely_creator_${id}`)?.value;
 
-  // Check expiry — if the event has passed its expiresAt, show the not-found page.
-  // The cron job will eventually delete the record, but until then we must not render stale data.
-  if (event.expiresAt < new Date()) notFound()
+  const data = await getEventDashboardData(id, creatorCookieValue);
+  if (!data) notFound();
 
-  // Fetch specific dates (if dateMode = 'specific_dates')
-  let candidateDates: string[] = []
-  if (event.dateMode === 'specific_dates') {
-    const rows = await db
-      .select()
-      .from(eventDates)
-      .where(eq(eventDates.eventId, id))
-      .orderBy(eventDates.sortOrder)
-    candidateDates = rows.map((r) => r.date)
-  }
-
-  // Phase 3: Compute gridDates for the availability drawer
-  let gridDates: string[] = []
-  if (event.dateMode === 'specific_dates') {
-    gridDates = candidateDates  // already loaded above
-  } else if (event.rangeStart && event.rangeEnd) {
-    gridDates = eachDayOfInterval({ start: event.rangeStart, end: event.rangeEnd })
-      .map(d => format(d, 'yyyy-MM-dd'))
-      .slice(0, 14)  // 14-day max per decisions
-  }
-
-  // Phase 4: Read creator cookie for identity check
-  const cookieStore = await cookies()
-  const creatorCookieValue = cookieStore.get(`timely_creator_${id}`)?.value
-
-  // Phase 4: Parallel fetch — heatmap data, participant slots, session
-  const [
-    heatmapRows,
-    participantRows,
+  const {
+    event,
+    gridDates,
+    heatmapMap,
+    peakCount,
+    topSlots,
+    bestSlot,
+    participantList,
+    participantSlotsMap,
+    totalParticipants,
+    dateRangeStr,
     session,
-  ] = await Promise.all([
-    // Aggregated counts per slot (for heatmap colors)
-    db.select({
-      slotStart: availability.slotStart,
-      participantCount: count(),
-    })
-      .from(availability)
-      .where(eq(availability.eventId, id))
-      .groupBy(availability.slotStart)
-      .orderBy(desc(count())),
-
-    // Per-participant slots (for tap-a-name intersection) + response status
-    db.select({
-      name: participants.name,
-      slotStart: availability.slotStart,
-      submittedAt: participants.submittedAt,
-    })
-      .from(participants)
-      .leftJoin(availability, eq(participants.id, availability.participantId))
-      .where(eq(participants.eventId, id)),
-
-    getSession(id),
-  ])
-
-  // Build heatmap map: slotKey -> count (coerce to number — Neon returns count() as string)
-  const heatmapMap: Record<string, number> = {}
-  for (const row of heatmapRows) {
-    heatmapMap[row.slotStart.toISOString()] = Number(row.participantCount)
-  }
-  const peakCount = heatmapRows.length > 0 ? Number(heatmapRows[0].participantCount) : 0
-  const bestSlot = heatmapRows.length > 0
-    ? { slotStart: heatmapRows[0].slotStart.toISOString(), count: Number(heatmapRows[0].participantCount) }
-    : null
-
-  // Build participant list (unique participants, with response status)
-  const participantMap = new Map<string, { name: string; submittedAt: Date | null }>()
-  const participantSlotsMap: Record<string, string[]> = {}
-  for (const row of participantRows) {
-    if (!participantMap.has(row.name)) {
-      participantMap.set(row.name, { name: row.name, submittedAt: row.submittedAt })
-    }
-    if (row.slotStart) {
-      if (!participantSlotsMap[row.name]) participantSlotsMap[row.name] = []
-      participantSlotsMap[row.name].push(row.slotStart.toISOString())
-    }
-  }
-  const participantList = [...participantMap.values()]
-  const totalParticipants = participantList.length
-
-  // Creator identity via cookie comparison (Option C — established in Phase 04-01)
-  const isCreator = !!(event.creatorToken && creatorCookieValue && event.creatorToken === creatorCookieValue)
-
-  // Own slots for personal indicator in heatmap (empty when unauthenticated)
-  let ownSlots: string[] = []
-  if (session) {
-    const ownRows = await db.select({ slotStart: availability.slotStart })
-      .from(availability)
-      .where(eq(availability.participantId, session.participantId))
-    ownSlots = ownRows.map(r => r.slotStart.toISOString())
-  }
-
-  // Names free at the best slot (for ConfirmTimeSheet display)
-  const freeNames = bestSlot
-    ? participantList
-        .filter(p => participantSlotsMap[p.name]?.includes(bestSlot.slotStart))
-        .map(p => p.name)
-    : []
-
-  // Derive hasSubmitted from session + participantMap
-  const hasSubmitted = session
-    ? (participantMap.get(session.participantName)?.submittedAt != null)
-    : false
-
-  // Existing participant names for JoinFlow
-  const existingNames = participantList.map(p => p.name)
+    ownSlots,
+    freeNames,
+    hasSubmitted,
+    isCreator,
+    existingNames,
+  } = data;
 
   return (
-    <main className="min-h-dvh px-4 py-10">
-      <div className="max-w-lg mx-auto space-y-6">
-        {/* Event header */}
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold text-text-primary leading-tight">
-            {event.title}
-          </h1>
-          {event.description && (
-            <p className="text-text-secondary text-base leading-relaxed">
-              {event.description}
-            </p>
-          )}
-          {/* Manage link — visible only to the event creator */}
-          {isCreator && (
-            <Link
-              href={`/e/${id}/manage`}
-              className="inline-block text-xs text-text-disabled hover:text-text-secondary underline underline-offset-2 focus-visible:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-brand"
-            >
-              Manage event
-            </Link>
-          )}
-        </div>
+    <main className="py-6 md:py-8">
+      <DashboardContainer>
+        {/* Event header section */}
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border-default pb-6 mb-8">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-brand text-sm font-medium uppercase tracking-wider">
+              <CalendarDays className="w-4 h-4" />
+              Event Dashboard
+            </div>
+            <h1 className="font-heading text-3xl md:text-4xl font-bold text-text-primary">
+              {event.title}
+            </h1>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-secondary">
+              <span className="flex items-center gap-1.5">
+                <CalendarDays className="w-4 h-4 text-brand" />
+                {dateRangeStr}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-brand" />
+                {formatHour(event.dayStart)} – {formatHour(event.dayEnd)}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Globe className="w-4 h-4 text-brand" />
+                {event.timezone}
+              </span>
+            </div>
+            {event.description && (
+              <p className="text-text-secondary text-sm leading-relaxed max-w-prose">
+                {event.description}
+              </p>
+            )}
+          </div>
 
-        {/* Confirmed time banner (shown above heatmap when event is confirmed) */}
-        {event.status === 'confirmed' && event.confirmedSlot && (
-          <section className="rounded-2xl bg-brand px-5 py-4 space-y-1">
-            <p className="text-sm font-medium text-white/80">Meeting confirmed</p>
+          <div className="flex flex-col items-start md:items-end gap-3 shrink-0">
+            <div className="text-sm text-text-secondary">
+              <span className="font-medium text-text-primary">
+                {totalParticipants}
+              </span>{" "}
+              {totalParticipants === 1 ? "respondent" : "respondents"}
+            </div>
+            {isCreator && (
+              <Link
+                href={`/e/${id}/manage`}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-text-secondary hover:text-text-primary bg-surface-subtle hover:bg-border-default rounded-lg transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+                Manage
+              </Link>
+            )}
+          </div>
+        </header>
+
+        {/* Confirmed time banner */}
+        {event.status === "confirmed" && event.confirmedSlot && (
+          <section className="rounded-xl bg-brand px-5 py-4 space-y-1 shadow-[var(--shadow-card)] mb-8">
+            <p className="text-sm font-medium text-white/80">
+              Meeting confirmed
+            </p>
             <p className="text-xl font-semibold text-white">
-              {format(event.confirmedSlot, 'EEEE, MMMM d')}
+              {format(event.confirmedSlot, "EEEE, MMMM d")}
             </p>
             <p className="text-base text-white/90">
-              {format(event.confirmedSlot, 'h:mm a')} &ndash; {format(addMinutes(event.confirmedSlot, 30), 'h:mm a')}
+              {format(event.confirmedSlot, "h:mm a")} –{" "}
+              {format(addMinutes(event.confirmedSlot, 30), "h:mm a")}
             </p>
           </section>
         )}
 
-        {/* BestTimeCallout + ConfirmTimeSheet (creator-only sheet) — visible to all visitors */}
-        <HeatmapResultsClient
-          bestSlot={bestSlot}
-          totalParticipants={totalParticipants}
-          isCreator={isCreator}
+        {/* 2-column dashboard grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left: ~2/3 */}
+          <div className="lg:col-span-8 space-y-5">
+            {gridDates.length > 0 && (
+              <HeatmapGrid
+                dates={gridDates}
+                dayStart={event.dayStart}
+                dayEnd={event.dayEnd}
+                timezone={event.timezone}
+                heatmapMap={heatmapMap}
+                peakCount={peakCount}
+                totalParticipants={totalParticipants}
+                participantSlots={participantSlotsMap}
+                ownSlots={ownSlots}
+              />
+            )}
+          </div>
+
+          {/* Right: ~1/3 */}
+          <aside className="lg:col-span-4 space-y-5">
+            <HeatmapResultsClient
+              bestSlot={bestSlot}
+              totalParticipants={totalParticipants}
+              isCreator={isCreator}
+              eventId={id}
+              freeNames={freeNames}
+            />
+            {topSlots.length > 0 && totalParticipants > 0 && (
+              <SuggestedTimes
+                slots={topSlots}
+                totalParticipants={totalParticipants}
+              />
+            )}
+            {participantList.length > 0 && (
+              <ParticipantList
+                participants={participantList}
+                totalInvited={totalParticipants}
+              />
+            )}
+
+            {/* CTA for unauthenticated users */}
+            {event.status !== "confirmed" && !session && (
+              <Panel>
+                <PanelTitle className="mb-3">Join this event</PanelTitle>
+                <p className="text-sm text-text-secondary mb-4">
+                  Add your name to mark your availability and help find the best
+                  time.
+                </p>
+                <ParticipantActions
+                  eventId={id}
+                  existingNames={existingNames}
+                  responseCount={existingNames.length}
+                />
+              </Panel>
+            )}
+          </aside>
+        </div>
+      </DashboardContainer>
+
+      {/* Floating toolbar for authenticated users — shown when event is not confirmed */}
+      {event.status !== "confirmed" && session && (
+        <FloatingUserToolbar
+          participantName={session.participantName}
+          hasSubmitted={hasSubmitted}
           eventId={id}
-          freeNames={freeNames}
+          dates={gridDates}
+          dayStart={event.dayStart}
+          dayEnd={event.dayEnd}
+          dateMode={event.dateMode}
         />
-
-        {/* Participant list — visible to all visitors */}
-        {participantList.length > 0 && (
-          <ParticipantList participants={participantList} />
-        )}
-
-        {/* HeatmapGrid — visible to all visitors */}
-        {gridDates.length > 0 && (
-          <HeatmapGrid
-            dates={gridDates}
-            dayStart={event.dayStart}
-            dayEnd={event.dayEnd}
-            timezone={event.timezone}
-            heatmapMap={heatmapMap}
-            peakCount={peakCount}
-            totalParticipants={totalParticipants}
-            participantSlots={participantSlotsMap}
-            ownSlots={ownSlots}
-          />
-        )}
-
-        {/* Candidate dates / date range */}
-        <section className="space-y-3">
-          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wide">
-            Candidate dates
-          </h2>
-          {event.dateMode === 'specific_dates' ? (
-            <ul className="space-y-2">
-              {candidateDates.map((date) => (
-                <li
-                  key={date}
-                  className="flex items-center gap-3 rounded-xl border border-border-default bg-white px-4 py-3"
-                >
-                  <span className="text-brand text-lg">📅</span>
-                  <span className="font-medium text-text-primary">
-                    {format(parseISO(date), 'EEEE, MMMM d, yyyy')}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="rounded-xl border border-border-default bg-white px-4 py-3 flex items-center gap-3">
-              <span className="text-brand text-lg">📅</span>
-              <span className="font-medium text-text-primary">
-                {event.rangeStart && event.rangeEnd
-                  ? `${format(event.rangeStart, 'MMMM d')} \u2013 ${format(event.rangeEnd, 'MMMM d, yyyy')}`
-                  : 'Date range TBD'}
-              </span>
-            </div>
-          )}
-        </section>
-
-        {/* Time window */}
-        <section className="rounded-xl border border-border-default bg-surface-subtle px-4 py-3 flex items-center gap-3">
-          <span className="text-brand">🕐</span>
-          <p className="text-sm text-text-secondary">
-            Available window:{' '}
-            <span className="font-medium text-text-primary">
-              {formatHour(event.dayStart)} – {formatHour(event.dayEnd)}
-            </span>
-          </p>
-        </section>
-
-        {/* CTA section — hidden when event is confirmed (grid is read-only) */}
-        {event.status !== 'confirmed' && (
-          session ? (
-            <AvailabilityCTA
-              eventId={id}
-              participantName={session.participantName}
-              hasSubmitted={hasSubmitted}
-              dates={gridDates}
-              dayStart={event.dayStart}
-              dayEnd={event.dayEnd}
-              dateMode={event.dateMode}
-            />
-          ) : (
-            <ParticipantActions
-              eventId={id}
-              existingNames={existingNames}
-              responseCount={existingNames.length}
-            />
-          )
-        )}
-      </div>
+      )}
     </main>
-  )
+  );
 }
 
 // Helper: format an hour integer (0-23) as a human-readable string
 function formatHour(hour: number): string {
-  if (hour === 0) return '12:00 AM'
-  if (hour < 12) return `${hour}:00 AM`
-  if (hour === 12) return '12:00 PM'
-  return `${hour - 12}:00 PM`
+  if (hour === 0) return "12:00 AM";
+  if (hour < 12) return `${hour}:00 AM`;
+  if (hour === 12) return "12:00 PM";
+  return `${hour - 12}:00 PM`;
 }

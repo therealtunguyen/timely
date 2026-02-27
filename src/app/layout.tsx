@@ -1,37 +1,41 @@
-import type { Metadata } from 'next'
-import { Work_Sans, Outfit } from 'next/font/google'
-import './globals.css'
-import Link from 'next/link'
-import { Toaster } from '@/components/ui/sonner'
-import { FlashToast } from '@/components/flash-toast'
+import type { Metadata } from "next";
+import { Work_Sans, Outfit } from "next/font/google";
+import "./globals.css";
+import Link from "next/link";
+import { Toaster } from "@/components/ui/sonner";
+import { FlashToast } from "@/components/flash-toast";
+import { DashboardHeader } from "@/components/layout/dashboard-header";
 
 const workSans = Work_Sans({
-  subsets: ['latin'],
-  variable: '--font-display',
-  display: 'swap',
-})
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
 
 const outfit = Outfit({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  display: 'swap',
-})
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
-    default: 'Timely — Find a time that works for everyone',
-    template: '%s | Timely',
+    default: "Timely — Find a time that works for everyone",
+    template: "%s | Timely",
   },
-  description: 'Share a link, mark your times, see the overlap.',
-}
+  description: "Share a link, mark your times, see the overlap.",
+};
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" className={`${workSans.variable} ${outfit.variable}`}>
       <body className="antialiased flex flex-col min-h-dvh">
-        <div className="flex-1">
-          {children}
-        </div>
+        <DashboardHeader />
+        <div className="flex-1">{children}</div>
         <footer className="px-4 py-6 text-center border-t border-border-default">
           <Link
             href="/privacy"
@@ -44,5 +48,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Toaster position="top-center" />
       </body>
     </html>
-  )
+  );
 }

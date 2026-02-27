@@ -1,11 +1,12 @@
 'use client'
 
+import { CalendarPlus, Edit3 } from 'lucide-react'
 import { AvailabilityDrawer } from './availability-drawer'
 
 interface AvailabilityCTAProps {
   eventId: string
   participantName: string
-  hasSubmitted: boolean   // true if participant.submittedAt is non-null
+  hasSubmitted: boolean
   dates: string[]
   dayStart: number
   dayEnd: number
@@ -21,9 +22,8 @@ export function AvailabilityCTA({
   dayEnd,
   dateMode,
 }: AvailabilityCTAProps) {
-  const label = hasSubmitted
-    ? `Welcome back, ${participantName} — Edit your availability`
-    : `Mark your availability`
+  const Icon = hasSubmitted ? Edit3 : CalendarPlus
+  const label = hasSubmitted ? 'Edit Availability' : 'Mark Availability'
 
   return (
     <AvailabilityDrawer
@@ -33,7 +33,8 @@ export function AvailabilityCTA({
       dayEnd={dayEnd}
       dateMode={dateMode}
       trigger={
-        <button className="block w-full text-center bg-brand hover:bg-brand-hover text-white font-medium py-3 px-6 rounded-lg transition-colors">
+        <button className="inline-flex items-center gap-2 bg-brand hover:bg-brand-hover text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-[var(--shadow-soft)]">
+          <Icon className="w-4 h-4" />
           {label}
         </button>
       }
