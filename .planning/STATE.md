@@ -8,7 +8,9 @@
 
 **Core value:** Finding a time that works for everyone should feel effortless — share a link, mark your times, see the overlap.
 
-**Current focus:** Phase 5 — Polish and Launch Readiness
+**Current focus:** Planning next milestone (v1.1)
+
+**Milestone:** v1.0 — SHIPPED 2026-02-28 → https://timely-cyan-three.vercel.app
 
 **Stack:** Next.js 16 (App Router) + Neon Postgres + Drizzle ORM + Vercel + Resend + Tailwind v4 + shadcn/ui + Zustand (grid only) + Upstash Redis (rate limiting)
 
