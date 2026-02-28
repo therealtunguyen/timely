@@ -1,510 +1,543 @@
-# Architecture Patterns
+# Architecture Research
 
-**Project:** Timely
-**Domain:** Group availability scheduling (When2meet competitor)
-**Researched:** 2026-02-17
-**Confidence:** HIGH for data model and security; MEDIUM for heatmap storage tradeoffs
+**Domain:** Group scheduling app — v1.1 Notifications & Calendar Export
+**Researched:** 2026-02-28
+**Confidence:** HIGH — all integration points derived from direct codebase inspection
 
 ---
 
-## Recommended Architecture
+## Context: What Already Exists
 
-Timely is a stateful CRUD application with a light computation layer (heatmap aggregation). It maps cleanly to a monolithic Next.js deployment with a single PostgreSQL database. No microservices, no separate backends — the Next.js app handles everything through API Route Handlers.
+This document answers integration questions for v1.1 against the shipped v1.0 codebase. The existing architecture works as follows:
+
+- **Route Handlers** handle all API calls (auth endpoints need HTTP status codes for 401/429)
+- **Server Actions** handle mutations that live inside authenticated creator context (`confirmTime`, `deleteEvent`)
+- **Resend + React Email** already wired for magic link emails — pattern is established and working
+- **Neon HTTP driver** means `db.batch()` for atomics; no `db.transaction()` support
+- **participants.email** column already exists in schema (nullable); it is currently only written when a magic link is requested
+
+The v1.0 `participants` table already has the email column. The `events` table does NOT have a `creatorEmail` column. That is the primary schema addition needed.
+
+---
+
+## Standard Architecture
+
+### System Overview
 
 ```
 Browser (React)
     │
-    │ HTTP (JSON)
-    ▼
-Next.js App Router (Vercel / Node)
-    ├── app/  (pages, layouts)
-    ├── app/api/  (Route Handlers — REST-style)
-    └── lib/  (data access, hashing, tokens)
-        │
-        │ Prisma ORM
-        ▼
-PostgreSQL (Neon / Supabase)
+    ├─ POST /api/events          ← add creatorEmail field
+    ├─ POST /api/participants/join  ← add optional email field
+    ├─ POST /api/availability    ← add "all responded" check + conditional notify
+    ├─ Server Action: confirmTime  ← add bulk participant notification send
+    └─ GET  /api/events/[id]/calendar.ics  ← NEW Route Handler
+         │
+         ▼
+    Next.js App Router (Vercel / Node)
+         │
+         ├─ src/lib/notifications.ts  ← NEW: shared email dispatch helpers
+         ├─ src/emails/               ← NEW: 2 email templates
+         └─ src/lib/schema.ts         ← MODIFIED: add creatorEmail + allRespondedAt
+              │
+              ▼
+         Neon Postgres + Drizzle ORM
+              │
+              └─ Resend (email delivery)
 ```
 
-### Why Not tRPC
+### Component Responsibilities
 
-tRPC is excellent but adds a layer of complexity that doesn't pay off here. Timely has a small, stable API surface (create event, respond, edit availability, verify PIN, generate/consume magic link). These endpoints will also need to be callable from public share links — bare URL-based. tRPC's RPC convention adds friction at the URL layer.
-
-Use **Next.js Route Handlers** (REST-style). Simple, cacheable, works with any client (browser, curl, future mobile app). The API surface is small enough that manual typing is trivial.
-
-**Server Actions** are appropriate only for form mutations inside authenticated sessions. Timely's PIN verification flow is stateful per request, so Route Handlers win for clarity and debuggability.
+| Component | Responsibility | New vs Modified |
+|-----------|----------------|-----------------|
+| `src/lib/schema.ts` | DB schema definitions | Modified — add 2 columns to events |
+| `src/app/api/events/route.ts` | Event creation POST handler | Modified — accept + store creatorEmail |
+| `src/app/api/participants/join/route.ts` | Participant join POST handler | Modified — accept + store optional email |
+| `src/app/api/availability/route.ts` | Save availability POST handler | Modified — trigger "all responded" check |
+| `src/lib/actions/confirm-time.ts` | Server Action: creator confirms slot | Modified — send participant notifications |
+| `src/lib/notifications.ts` | Resend dispatch helpers | New — reusable email send functions |
+| `src/emails/all-responded-email.tsx` | Email: all responded notification to creator | New |
+| `src/emails/time-confirmed-email.tsx` | Email: confirmed time notification to participants | New |
+| `src/app/api/events/[id]/calendar.ics/route.ts` | .ics file Route Handler | New |
+| `src/app/e/[id]/page.tsx` | Event page | Modified — add calendar export UI block |
+| `src/components/create-event-form.tsx` | Home page event creation form | Modified — add optional email input |
+| `src/components/identity/pin-sheet.tsx` or `name-sheet.tsx` | Participant join UI | Modified — add optional email input |
 
 ---
 
-## Data Model
-
-### Core Entities
+## Recommended Project Structure
 
 ```
-Event
-  id              String   @id (nanoid, 10 chars)
-  title           String
-  description     String?
-  creator_name    String
-  creator_email   String?
-  date_mode       Enum     (SPECIFIC_DATES | DATE_RANGE)
-  range_start     DateTime?  // used when date_mode = DATE_RANGE
-  range_end       DateTime?
-  slot_duration   Int      @default(30)  // minutes per time slot
-  day_start       Int      @default(9)   // hour of day (0–23)
-  day_end         Int      @default(21)
-  timezone        String   // IANA tz e.g. "America/New_York"
-  status          Enum     (OPEN | CLOSED | CONFIRMED)
-  confirmed_slot  DateTime?
-  created_at      DateTime @default(now())
-  expires_at      DateTime  // auto-cleanup after N days
-
-  dates           EventDate[]
-  participants    Participant[]
-
-Participant
-  id              String   @id @default(cuid2())
-  event_id        String
-  name            String   // display name, unique per event
-  pin_hash        String   // argon2id hash of 4-digit PIN
-  email           String?  // optional, for magic link
-  timezone        String?  // participant's local timezone
-  submitted_at    DateTime?
-  created_at      DateTime @default(now())
-
-  event           Event
-  availability    Availability[]
-  magic_tokens    MagicToken[]
-
-  @@unique([event_id, name])  // names unique within event
-
-EventDate
-  id              String   @id @default(cuid2())
-  event_id        String
-  date            Date     // specific date (DATE_RANGE generates these at render time OR stores expanded)
-  sort_order      Int
-
-  event           Event
-  // NOTE: see "Date Range Expansion" below
-
-Availability
-  id              String   @id @default(cuid2())
-  participant_id  String
-  event_id        String   // denormalized for query efficiency
-  slot_start      DateTime // UTC, precise slot start
-  is_available    Boolean  @default(true)
-
-  participant     Participant
-  event           Event
-
-  @@unique([participant_id, slot_start])  // one record per slot per participant
-  @@index([event_id, slot_start])         // heatmap queries scan by event
-
-MagicToken
-  id              String   @id @default(cuid2())
-  token           String   @unique  // 32-byte random hex, hashed for storage
-  token_hash      String   // SHA-256 of the raw token (stored; raw sent in email)
-  participant_id  String
-  event_id        String
-  created_at      DateTime @default(now())
-  expires_at      DateTime  // 24 hours
-  used_at         DateTime?  // null = still valid; set on consumption
-
-  participant     Participant
+src/
+├── app/
+│   ├── api/
+│   │   ├── events/
+│   │   │   ├── route.ts              # Modified: accept creatorEmail
+│   │   │   └── [id]/
+│   │   │       └── calendar.ics/
+│   │   │           └── route.ts      # New: .ics download handler
+│   │   ├── availability/
+│   │   │   └── route.ts              # Modified: all-responded check after POST
+│   │   └── participants/
+│   │       └── join/
+│   │           └── route.ts          # Modified: accept + store participant email
+│   └── e/[id]/
+│       └── page.tsx                  # Modified: calendar export UI after confirmed status
+├── emails/
+│   ├── magic-link-email.tsx          # Existing
+│   ├── all-responded-email.tsx       # New
+│   └── time-confirmed-email.tsx      # New
+├── lib/
+│   ├── schema.ts                     # Modified: creatorEmail + allRespondedAt on events
+│   ├── notifications.ts              # New: sendAllRespondedEmail, sendTimeConfirmedEmail
+│   └── actions/
+│       └── confirm-time.ts           # Modified: send participant emails after DB update
+└── components/
+    ├── create-event-form.tsx          # Modified: optional email field
+    ├── calendar-export.tsx            # New: .ics button + Google Calendar link
+    └── identity/
+        └── pin-sheet.tsx              # Modified: optional email input after PIN setup
 ```
 
-### Design Rationale
+### Structure Rationale
 
-**Availability as rows, not a bitmask.** A bitfield/bitmask approach stores each participant's availability as a single integer column, querying via bitwise operations. This is memory-efficient but has significant downsides: it becomes unreadable, is hard to migrate if slot duration changes, and makes partial updates painful. For Timely's scale (≤10 participants, ≤100 slots), individual rows are the right call. The `@@index([event_id, slot_start])` index makes heatmap aggregation a single GROUP BY query.
-
-**`slot_start` as UTC DateTime.** Each slot is stored as an absolute UTC timestamp, never as "hour 9 on date X" in a local timezone. This sidesteps participant timezone confusion entirely: whatever timezone a participant marks, we convert to UTC before storage. Display converts back from UTC to each viewer's local timezone.
-
-**Event ID as nanoid (10 chars).** A 10-character nanoid (A–Za–z0–9) gives ~73 bits of entropy — effectively zero collision risk at Timely's scale, and it produces short shareable URLs like `/event/v4tXk2mRpq`. Avoid sequential IDs (guessable) and full UUIDs (ugly in URLs).
-
-**EventDate for specific-dates mode.** When the creator picks specific dates, they are stored as `EventDate` rows. For date-range mode, the available dates are computed at query time from `range_start`/`range_end` rather than pre-expanded — this keeps the schema clean and avoids storing potentially large date sets.
+- **`src/lib/notifications.ts`:** Centralizes all Resend calls so `availability/route.ts` and `confirm-time.ts` import the same function signatures. Avoids duplicating `new Resend(...)` instantiation and `from:` address config.
+- **`src/app/api/events/[id]/calendar.ics/route.ts`:** A Route Handler, not a Server Action, because .ics download requires setting `Content-Type: text/calendar` and `Content-Disposition` response headers — not achievable from a Server Action.
+- **`src/emails/`:** Follows the established React Email pattern from `magic-link-email.tsx`. Keep all email templates here.
 
 ---
 
-## Event URL Scheme
+## Architectural Patterns
 
-```
-/event/[eventId]              → public availability view / respond form
-/event/[eventId]/results      → heatmap results view (link shared by creator)
-/event/[eventId]/admin        → creator view (confirm time, see response status)
-```
+### Pattern 1: "All Responded" Check Inside POST /api/availability
 
-Use a **10-character nanoid** for `eventId`. This is:
-- Short enough to share by voice or screenshot
-- Long enough to be collision-resistant
-- URL-safe without encoding
+**What:** After saving slots in the existing `POST /api/availability` handler, run a count query to check if every current participant has a non-null `submittedAt`. If yes, and if the creator has an email and `allRespondedAt` is still null, send the notification and stamp `allRespondedAt`.
 
-Do NOT use slugs (collision-prone, requires uniqueness enforcement, slower lookup) or full UUIDs (36 characters, ugly). Nanoid wins on all axes for this use case.
+**When to use:** The check belongs here because this is the only place that transitions a participant from "not submitted" to "submitted". It already updates `submittedAt` on the participant row, so the check is naturally co-located.
+
+**Why not a separate action or webhook:** Timely has no background job queue and no event bus. Adding a separate trigger mechanism would require infrastructure that doesn't exist. The synchronous check after the DB update is the right fit for this scale.
+
+**Trade-offs:**
+- Adds one extra query per availability save (count of unsubmitted participants) — negligible at this scale
+- If email send fails, the slot save still succeeds (fire-and-forget is acceptable here; the creator is not blocked if Resend has a transient error)
+
+**Example:**
 
 ```typescript
-// lib/id.ts
-import { nanoid } from 'nanoid';
-
-export const generateEventId = () => nanoid(10);
-// Output: "v4tXk2mRpq"
-```
-
----
-
-## Availability Grid Data Structure
-
-### Storage
-
-Each time slot a participant marks as available or unavailable is stored as a single `Availability` row with a `slot_start` UTC DateTime. This is a **sparse positive** model — only available slots are stored (absent = unavailable), though storing explicit boolean allows "I explicitly marked unavailable" vs "I never responded" distinction if needed.
-
-For a 7-day event with 30-minute slots from 9am–9pm, that is:
-- 7 days × 24 slots/day = 168 slots per participant
-- 10 participants × 168 = 1,680 rows max per event
-
-This is trivially small. Row-per-slot is the right choice.
-
-### Heatmap Computation
-
-Compute heatmaps **server-side at query time**. For Timely's scale, a single SQL query suffices:
-
-```sql
-SELECT
-  slot_start,
-  COUNT(*) AS available_count,
-  COUNT(DISTINCT p.id) FILTER (WHERE a.id IS NULL) AS not_responded_count
-FROM generate_series(
-  $event_start, $event_end, interval '30 minutes'
-) AS slot_start
-LEFT JOIN availability a ON a.slot_start = slot_start AND a.event_id = $event_id
-LEFT JOIN participants p ON p.event_id = $event_id
-GROUP BY slot_start
-ORDER BY slot_start;
-```
-
-Or more pragmatically with Prisma/Drizzle using a `groupBy`:
-
-```typescript
-// lib/heatmap.ts
-export async function computeHeatmap(eventId: string) {
-  const slots = await db.availability.groupBy({
-    by: ['slot_start'],
-    where: { event_id: eventId, is_available: true },
-    _count: { participant_id: true },
-    orderBy: { slot_start: 'asc' },
-  });
-  return slots; // [{ slot_start: Date, _count: { participant_id: 4 } }]
-}
-```
-
-Return the raw slot counts to the client. The client maps counts to color intensity for the heatmap visualization. This is appropriate because color rendering belongs in the UI layer.
-
-**Do not cache heatmap data** for v1. With ≤10 participants and ≤168 slots, the query is sub-millisecond. Add Redis caching only if profiling reveals it as a bottleneck (it won't be).
-
----
-
-## API Design
-
-Use **Next.js App Router Route Handlers** (REST-style). No tRPC, no GraphQL.
-
-### Route Structure
-
-```
-POST   /api/events                          → create event, returns { eventId }
-GET    /api/events/[eventId]                → fetch event + participant list + heatmap
-POST   /api/events/[eventId]/participants   → register name + PIN, returns { participantId, sessionToken }
-POST   /api/events/[eventId]/participants/[participantId]/verify  → verify PIN, returns { sessionToken }
-GET    /api/events/[eventId]/participants/[participantId]/availability  → get participant's slots
-PUT    /api/events/[eventId]/participants/[participantId]/availability  → replace availability slots
-POST   /api/events/[eventId]/magic-link     → request magic link (email)
-GET    /api/magic/[token]                   → consume magic link, redirect + set session
-POST   /api/events/[eventId]/confirm        → creator confirms winning slot
-```
-
-### Session Model
-
-Timely is "no accounts" but still needs to know which participant is editing. Use a **short-lived session token** stored in an `httpOnly` cookie:
-
-1. Participant registers name + PIN → server creates `Participant` record, returns a session token (random 32 bytes, stored in a separate `sessions` table or as a signed JWT).
-2. Session token is sent as an `httpOnly` cookie with `SameSite=Lax`.
-3. Subsequent requests to edit availability include the cookie automatically.
-4. Session expires after 7 days (or event expiry, whichever is sooner).
-
-**No JWT for sessions.** A JWT would require the server to trust its own secret and can't be revoked. A database-backed session token is simpler to reason about and can be invalidated immediately (e.g., after magic link consumption).
-
----
-
-## PIN Hashing and Security
-
-### Algorithm: Argon2id
-
-Use **argon2id**, not bcrypt. Argon2id won the 2015 Password Hashing Competition and is the OWASP 2025 recommendation. It is memory-hard (resists GPU attacks) and has a configurable memory cost.
-
-The fundamental weakness of 4-digit PINs is the keyspace (10,000 combinations). Hashing alone cannot fix this — a motivated attacker with the database can brute-force all 10,000 values offline. Argon2id's memory-hardness makes each attempt expensive enough to matter.
-
-**OWASP recommended minimum parameters:**
-```typescript
-// lib/pin.ts
-import argon2 from 'argon2';
-
-export async function hashPin(pin: string): Promise<string> {
-  return argon2.hash(pin, {
-    type: argon2.argon2id,
-    memoryCost: 19456,  // 19 MiB (OWASP minimum)
-    timeCost: 2,
-    parallelism: 1,
-  });
-}
-
-export async function verifyPin(hash: string, pin: string): Promise<boolean> {
-  return argon2.verify(hash, pin);
-}
-```
-
-### PIN Security Layers (Defense in Depth)
-
-Because PINs are low entropy, hashing alone is insufficient. Implement ALL of the following:
-
-1. **Rate limiting on PIN verification endpoint:** 5 attempts per 15-minute window per (event_id + participant_name). Use Upstash Rate Limit with Redis for serverless compatibility.
-2. **Account lockout after 10 failed attempts:** Lock the participant record and require magic link to unlock.
-3. **Never transmit PIN in plaintext after creation:** The PIN is entered once, verified once, and never shown again. Store only the hash.
-4. **PIN is per-event:** A PIN on one event gives no access to any other event, even with the same name.
-
----
-
-## Magic Link Token Lifecycle
-
-```
-1. Participant requests magic link (POST /api/events/[eventId]/magic-link)
-   - Requires: event_id, participant name
-   - If email on file: generate token, email link
-   - If no email on file: prompt participant to enter email first
-
-2. Token generation
-   - 32 cryptographically random bytes (crypto.getRandomValues or Node crypto.randomBytes)
-   - Stored as SHA-256 hash in MagicToken table
-   - Raw token sent in URL: /api/magic/[rawToken]
-   - Expires in 24 hours
-
-3. Token consumption (GET /api/magic/[rawToken])
-   - Hash the incoming token, look up MagicToken by hash
-   - Verify: not expired, not yet used, event not closed
-   - Mark used_at = now()
-   - Create a session for the participant (same session cookie mechanism as PIN flow)
-   - Redirect to /event/[eventId] with editing enabled
-
-4. Cleanup
-   - Delete expired/used tokens in a scheduled job or lazily on lookup
-```
-
-```typescript
-// lib/magic-token.ts
-import { randomBytes, createHash } from 'crypto';
-
-export function generateMagicToken(): { raw: string; hash: string } {
-  const raw = randomBytes(32).toString('hex'); // 64-char hex string
-  const hash = createHash('sha256').update(raw).digest('hex');
-  return { raw, hash };
-}
-
-export function hashToken(raw: string): string {
-  return createHash('sha256').update(raw).digest('hex');
-}
-```
-
-**Single-use enforcement:** Setting `used_at` at consumption time is the lock. The lookup query filters on `used_at IS NULL AND expires_at > NOW()`. There is no race condition risk at Timely's scale — but if needed, a database transaction with a SELECT FOR UPDATE would prevent double-consumption.
-
-**Do not use JWT for magic links.** JWTs can't be invalidated and have had numerous implementation vulnerabilities. A database-backed opaque token is the safe, auditable choice.
-
----
-
-## Timezone Handling
-
-### Strategy: Store UTC, Display Local
-
-**All `slot_start` values in the database are UTC.** There is no ambiguity, no DST confusion, and no "which timezone did this user mean?" problem.
-
-**Timezone responsibilities:**
-
-| Actor | Responsibility |
-|-------|---------------|
-| Creator | Sets the event timezone (IANA string, e.g. `"America/New_York"`) when creating the event |
-| Responder | Browser detects their local timezone via `Intl.DateTimeFormat().resolvedOptions().timeZone` |
-| UI | Displays the grid in the viewer's detected timezone |
-| API | Accepts slot selections as UTC DateTime strings (ISO 8601) |
-| Heatmap | Aggregated in UTC, rendered in viewer's timezone |
-
-**Creator timezone is the canonical timezone for the event.** The grid is defined in the creator's timezone (day_start = 9am in their zone). Responders see the same absolute time slots converted to their local timezone. This matches how When2meet and Doodle handle it.
-
-**Timezone conversion in the browser:**
-```typescript
-// Convert a UTC slot_start to display string in viewer's timezone
-const display = new Intl.DateTimeFormat('en-US', {
-  timeZone: viewerTimezone,
-  weekday: 'short',
-  month: 'short',
-  day: 'numeric',
-  hour: 'numeric',
-  minute: '2-digit',
-}).format(new Date(slot_start_utc));
-```
-
-**Use `date-fns-tz` for any server-side timezone math** (converting creator's "9am" to UTC when generating slot series). The Temporal API is not yet universally available in Node.js runtimes as of early 2026 — ship with `date-fns-tz` and migrate to Temporal when it stabilizes in the runtime.
-
----
-
-## ORM: Prisma
-
-Use **Prisma** over Drizzle for this project. Rationale:
-
-- Prisma's schema file is readable without TypeScript knowledge — the `schema.prisma` format is self-documenting and easier to discuss
-- `prisma migrate dev` provides reliable, version-controlled migrations with no extra tooling
-- Prisma's generated client is fully type-safe and integrates naturally with Next.js App Router
-- Timely is NOT a serverless-at-scale application — cold-start performance (Drizzle's primary advantage) is not a concern here
-
-Drizzle would be the choice if deploying to Cloudflare Workers with edge-optimized SQL. Timely deploys to Vercel Node.js functions where Prisma runs fine.
-
----
-
-## Mobile-First Responsive Architecture
-
-### Layout Strategy
-
-Design for 375px viewport width (iPhone SE) as the baseline. The availability grid is the most mobile-hostile UI element — it must be scrollable and touch-friendly.
-
-**Grid scrolling:** Wrap the time grid in a horizontally scrollable container. Freeze the time axis column using CSS `position: sticky; left: 0`. Date headers scroll with the grid.
-
-```css
-.grid-container {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch; /* iOS momentum scroll */
-}
-
-.time-column {
-  position: sticky;
-  left: 0;
-  z-index: 10;
-  background: white; /* prevent bleed-through */
-}
-```
-
-**Touch interaction for availability marking:** Use pointer events, not mouse events. Allow drag-to-select by tracking `pointerdown`, `pointermove`, `pointerup`. This handles both touch and mouse with a single event handler chain.
-
-```typescript
-// components/AvailabilityGrid.tsx (pattern)
-const [isDragging, setIsDragging] = useState(false);
-const [dragValue, setDragValue] = useState<boolean | null>(null); // mark as avail or unavail
-
-const handlePointerDown = (slotId: string) => {
-  const currentValue = selectedSlots.has(slotId);
-  setDragValue(!currentValue); // toggle direction determined by first cell
-  setIsDragging(true);
-  toggleSlot(slotId, !currentValue);
-};
-
-const handlePointerEnter = (slotId: string) => {
-  if (isDragging && dragValue !== null) {
-    toggleSlot(slotId, dragValue);
+// src/app/api/availability/route.ts — after the db.batch() and submittedAt update
+
+// "All responded" notification gate
+const event = await db.query.events.findFirst({ where: eq(events.id, session.eventId) })
+
+if (event && event.creatorEmail && !event.allRespondedAt) {
+  const unsubmitted = await db
+    .select({ id: participants.id })
+    .from(participants)
+    .where(
+      and(
+        eq(participants.eventId, session.eventId),
+        isNull(participants.submittedAt)
+      )
+    )
+
+  if (unsubmitted.length === 0) {
+    // All participants have submitted — stamp flag and send email
+    await db
+      .update(events)
+      .set({ allRespondedAt: new Date() })
+      .where(eq(events.id, session.eventId))
+
+    // Fire-and-forget — do not await; slot save already succeeded
+    sendAllRespondedEmail({
+      creatorEmail: event.creatorEmail,
+      eventTitle: event.title,
+      eventUrl: `${process.env.NEXT_PUBLIC_APP_URL}/e/${session.eventId}`,
+      participantCount: /* total count fetched above */,
+    }).catch((err) => console.error('[notifications] all-responded email failed:', err))
   }
-};
+}
 ```
 
-**Minimum touch target size:** 44px × 44px (Apple HIG minimum). With 30-minute slots displayed at ~44px height and column widths of 48px minimum, this is achievable.
+### Pattern 2: Idempotency via DB Timestamp Flag (`allRespondedAt`)
 
-### Tailwind Breakpoints
+**What:** Add `allRespondedAt timestamp` column to the `events` table. The "all responded" notification is sent only once: when the flag is null at check time and all participants have submitted. The flag is set to the current timestamp immediately before sending.
 
-Use Tailwind CSS with mobile-first breakpoints. No custom breakpoints needed:
+**When to use:** Whenever a notification must fire exactly once despite multiple possible triggers (e.g., participant A saves → all responded → send; then participant A edits and saves again → still all responded but flag is already set → skip).
 
+**Why DB flag over Redis key:** Timely already uses Neon as the source of truth for all event state. A DB column is simpler to query alongside the event row, survives Redis evictions, and doesn't require a separate TTL strategy. Redis keys with TTL would be wrong here — the flag must persist for the lifetime of the event.
+
+**Why not a `notificationSentAt` column:** `allRespondedAt` is semantically richer — it records when the threshold was crossed, which is useful for debugging and future features (e.g., "all responded X hours ago").
+
+**Trade-offs:**
+- Requires a migration to add the column
+- The check is a DB read on every availability save — one lightweight query, acceptable
+
+### Pattern 3: Confirmed-Time Notification in Server Action
+
+**What:** In the existing `confirmTime` Server Action, after the `db.update` that sets `confirmedSlot` and `status = 'confirmed'`, fetch all participants with non-null emails and send the confirmed-time notification to each.
+
+**When to use:** This is the correct location because `confirmTime` is already the authoritative mutation for the "confirmed" transition. The notification is part of the same semantic operation, not a side effect to route elsewhere.
+
+**Why Server Action is fine here (unlike PIN verification):** The confirmed-time notification does not need an HTTP status code — it is initiated by the creator via a client component, not via a direct HTTP API call that needs 401/429 semantics. The Server Action pattern (`'use server'`) is appropriate.
+
+**Fire-and-forget strategy:** Do not `await` the email sends inside the Server Action. If Resend fails transiently, the event is still confirmed and the creator should not see an error. Log failures server-side.
+
+**Example:**
+
+```typescript
+// src/lib/actions/confirm-time.ts — after the db.update
+
+// Fetch participants with email for confirmed-time notifications
+const eligibleParticipants = await db
+  .select({ email: participants.email, name: participants.name })
+  .from(participants)
+  .where(
+    and(
+      eq(participants.eventId, eventId),
+      isNotNull(participants.email)
+    )
+  )
+
+if (eligibleParticipants.length > 0) {
+  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/e/${eventId}`
+  // Fire-and-forget — confirmation already committed
+  Promise.all(
+    eligibleParticipants.map((p) =>
+      sendTimeConfirmedEmail({
+        to: p.email!,
+        participantName: p.name,
+        eventTitle: event.title,
+        confirmedSlot: new Date(slotStart),
+        eventUrl,
+        eventTimezone: event.timezone,
+      })
+    )
+  ).catch((err) => console.error('[notifications] confirmed-time email(s) failed:', err))
+}
 ```
-Default (0px+): mobile layout
-sm: (640px+): nothing major changes
-md: (768px+): wider grid columns, larger slot cells
-lg: (1024px+): optional sidebar layout for results
+
+### Pattern 4: .ics Generation as Route Handler
+
+**What:** A dedicated Route Handler at `GET /api/events/[id]/calendar.ics` generates and returns a valid iCalendar (.ics) file. The confirmed slot data is fetched from the DB, formatted per RFC 5545, and returned with appropriate headers.
+
+**When to use:** Always use a Route Handler (not Server Action) when the response requires custom HTTP headers — in this case `Content-Type: text/calendar` and `Content-Disposition: attachment; filename="event.ics"`.
+
+**Library:** Use the `ics` npm package (maintained, RFC 5545 compliant, no native binaries). It generates a valid VEVENT string from a plain object. No alternatives needed — `ics` is the standard choice for Next.js + Node.
+
+**Trade-offs:**
+- Route Handler is publicly accessible — no auth required. Anyone with the event ID can download the .ics. This is correct behavior (the event is already public once you have the link).
+- Must validate that `event.status === 'confirmed'` and `event.confirmedSlot` is non-null before generating; return 404 otherwise.
+
+**Example:**
+
+```typescript
+// src/app/api/events/[id]/calendar.ics/route.ts
+import { createEvent } from 'ics'
+
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const event = await db.query.events.findFirst({ where: eq(events.id, params.id) })
+
+  if (!event || event.status !== 'confirmed' || !event.confirmedSlot) {
+    return new Response('Not found', { status: 404 })
+  }
+
+  const slot = event.confirmedSlot
+  const { error, value } = createEvent({
+    title: event.title,
+    description: event.description ?? undefined,
+    start: [slot.getUTCFullYear(), slot.getUTCMonth() + 1, slot.getUTCDate(),
+            slot.getUTCHours(), slot.getUTCMinutes()],
+    startInputType: 'utc',
+    duration: { minutes: 30 },
+  })
+
+  if (error || !value) {
+    return new Response('Failed to generate calendar file', { status: 500 })
+  }
+
+  return new Response(value, {
+    headers: {
+      'Content-Type': 'text/calendar; charset=utf-8',
+      'Content-Disposition': `attachment; filename="${encodeURIComponent(event.title)}.ics"`,
+    },
+  })
+}
 ```
-
-### Performance on Mobile
-
-- Use Next.js `Image` component for any assets
-- Avoid large client-side bundles — the availability grid computation runs on the server
-- No real-time updates (WebSocket) in v1 — page refresh is the update mechanism
-- `loading="eager"` for the event grid (above-fold, primary content)
 
 ---
 
-## Component Boundaries
+## Data Flow
 
-| Component | Responsibility | Notes |
-|-----------|----------------|-------|
-| `app/event/[id]/page.tsx` | Route entry, data fetch | Server component; passes data to client grid |
-| `components/AvailabilityGrid` | Touch-interactive slot selection | Client component; manages local state |
-| `components/HeatmapGrid` | Read-only color intensity display | Client component; takes pre-computed counts |
-| `components/ParticipantForm` | Name + PIN entry, validation | Client component |
-| `components/EventCreator` | Multi-step event creation flow | Client component with multi-step state |
-| `lib/db.ts` | Prisma client singleton | Server-only |
-| `lib/pin.ts` | hashPin, verifyPin | Server-only (argon2) |
-| `lib/magic-token.ts` | generateMagicToken, hashToken | Server-only |
-| `lib/heatmap.ts` | computeHeatmap | Server-only |
-| `lib/id.ts` | generateEventId (nanoid) | Shared |
-| `lib/timezone.ts` | UTC conversion helpers | Shared (date-fns-tz) |
+### "All Responded" Notification Flow
+
+```
+Participant saves availability
+    ↓
+POST /api/availability
+    ↓
+db.batch() — delete old slots, insert new slots
+    ↓
+db.update participants.submittedAt = now()
+    ↓
+Check: event.creatorEmail set? AND event.allRespondedAt null?
+    │
+    ├── NO → return { success: true }
+    │
+    └── YES → COUNT participants WHERE submittedAt IS NULL
+                  │
+                  ├── count > 0 → return { success: true }  (not everyone done yet)
+                  │
+                  └── count = 0 → db.update events.allRespondedAt = now()
+                                  → sendAllRespondedEmail() [fire-and-forget]
+                                  → return { success: true }
+```
+
+### Confirmed-Time Notification Flow
+
+```
+Creator clicks "Confirm this time" in ConfirmTimeSheet
+    ↓
+confirmTime(eventId, slotStart) [Server Action]
+    ↓
+Verify creator cookie matches event.creatorToken
+    ↓
+db.update events SET confirmedSlot, status='confirmed'
+    ↓
+Fetch participants WHERE email IS NOT NULL
+    ↓
+Promise.all(sendTimeConfirmedEmail x N) [fire-and-forget]
+    ↓
+revalidatePath(`/e/${eventId}`)
+    ↓
+return { success: true }
+```
+
+### .ics Download Flow
+
+```
+User on confirmed event page clicks "Download .ics"
+    ↓
+Browser navigates to GET /api/events/[id]/calendar.ics
+    ↓
+Route Handler fetches event from DB
+    ↓
+Validates: status='confirmed' AND confirmedSlot NOT NULL
+    ↓
+ics.createEvent() generates RFC 5545 VCALENDAR string
+    ↓
+Response(value, { 'Content-Type': 'text/calendar', 'Content-Disposition': 'attachment' })
+    ↓
+Browser downloads file as [event-title].ics
+```
+
+### Google Calendar Link Flow
+
+```
+Confirmed event page renders
+    ↓
+Server Component computes Google Calendar URL from confirmedSlot
+    ↓
+URL: https://calendar.google.com/calendar/render?action=TEMPLATE
+     &text=[title]&dates=[start/end in UTC]&details=[description]
+    ↓
+Rendered as anchor tag with target="_blank"
+    ↓
+User clicks → Google Calendar opens pre-filled in new tab
+```
+
+### Key Data Flows
+
+1. **Email address collection (creator):** `CreateEventForm` → `POST /api/events` → stored in `events.creatorEmail`. Optional field; null if not provided.
+2. **Email address collection (participant):** `PinSheet` (after PIN setup success, before redirect) → `POST /api/participants/join` (add email param) — OR as a secondary step in the join flow. See UX note below.
+3. **Idempotency check:** Every `POST /api/availability` reads `events.allRespondedAt`. If already set, the notification block is skipped entirely with no extra queries.
 
 ---
 
-## Anti-Patterns to Avoid
+## Schema Changes
 
-### Anti-Pattern 1: Storing Availability as a Bitmask
+### Modified: `events` table
 
-**What:** Encoding a participant's availability as a single integer where each bit represents a time slot.
-**Why bad:** Requires bitwise SQL operators, breaks when slot duration changes, can't easily query "who is free at slot X", makes debugging opaque.
-**Instead:** One row per slot per participant with a `slot_start` DateTime column and a covering index.
+Add two columns:
 
-### Anti-Pattern 2: Storing Times in Local Timezone
+```typescript
+// src/lib/schema.ts
+export const events = pgTable('events', {
+  // ... existing columns ...
+  creatorEmail: text('creator_email'),                                    // NEW — nullable, for "all responded" notification
+  allRespondedAt: timestamp('all_responded_at', { withTimezone: true }), // NEW — idempotency flag; null = not yet notified
+})
+```
 
-**What:** Saving "9:00 AM" without a timezone reference, or using the creator's local offset.
-**Why bad:** DST transitions shift slots by an hour; participants in other timezones see incorrect times; queries for overlapping slots require timezone-aware comparisons.
-**Instead:** All times stored as UTC ISO 8601 DateTimes. Convert at the display layer.
+Migration command: `npm run db:generate && npm run db:migrate`
 
-### Anti-Pattern 3: Using JWT for Session Tokens
+### Unchanged: `participants` table
 
-**What:** Issuing a JWT after PIN verification and trusting it without a database lookup.
-**Why bad:** JWTs cannot be revoked. If a magic link consumes a session, or a participant wants to log out all devices, there's no mechanism. JWTs also encourage storing sensitive state in the token payload (visible base64).
-**Instead:** Opaque session tokens stored in the database as `httpOnly` cookies.
-
-### Anti-Pattern 4: Client-Side PIN Comparison
-
-**What:** Sending the stored PIN hash to the browser and comparing there.
-**Why bad:** Exposes the hash to the client, enabling offline brute-force with no rate limiting.
-**Instead:** PIN verification is always server-side. The client sends the PIN; the server compares against the stored hash and returns success/failure.
-
-### Anti-Pattern 5: Inline Server Actions for Auth Flows
-
-**What:** Using Next.js Server Actions to handle PIN verification or magic link consumption.
-**Why bad:** Server Actions are POST-only, don't support proper HTTP status codes for auth failures (401, 403), and are harder to rate-limit at the edge.
-**Instead:** Route Handlers for all auth-adjacent operations. Standard HTTP semantics.
+The `email` column already exists as `text('email')` (nullable). No schema change needed. The join flow (`/api/participants/join`) needs to accept and store the email if provided.
 
 ---
 
-## Scalability Considerations
+## Integration Points
 
-| Concern | At 100 events | At 10K events | Notes |
-|---------|---------------|---------------|-------|
-| Database rows | ~170K availability rows | ~17M rows | Trivial for PostgreSQL |
-| Heatmap query | <1ms | <10ms with index | Index on (event_id, slot_start) handles this |
-| Event cleanup | Manual or cron | Scheduled deletion via `expires_at` | Events expire after 30 days |
-| PIN brute force | Rate limit per IP | Rate limit per IP + Redis distributed | Upstash handles serverless rate limiting |
-| Event ID collisions | Negligible | Negligible | 10-char nanoid = 10^18 collision resistance |
+### Modified Files
 
-Timely will never need horizontal database sharding or microservices. The architecture described above will serve well into the tens of thousands of events without structural changes.
+| File | Change | Rationale |
+|------|--------|-----------|
+| `src/lib/schema.ts` | Add `creatorEmail`, `allRespondedAt` to events | Required for idempotent "all responded" notification |
+| `src/app/api/events/route.ts` | Accept optional `creatorEmail` in POST body | Persist creator email at event creation |
+| `src/lib/validations.ts` | Add optional `creatorEmail: z.string().email().optional()` to createEventSchema | Validate email format |
+| `src/app/api/participants/join/route.ts` | Accept optional `email` in POST body, store on participant row | Collect email at join time |
+| `src/app/api/availability/route.ts` | After submittedAt update, run all-responded check | Trigger creator notification |
+| `src/lib/actions/confirm-time.ts` | After db.update, fetch participant emails and send notifications | Trigger participant notifications |
+| `src/components/create-event-form.tsx` | Add optional email input field | Collect creator email |
+| `src/components/identity/pin-sheet.tsx` | Add optional email input after PIN setup (mode='setup') | Collect participant email |
+| `src/app/e/[id]/page.tsx` | Add CalendarExport component when status='confirmed' | Expose .ics and Google Cal links |
+
+### New Files
+
+| File | Purpose |
+|------|---------|
+| `src/lib/notifications.ts` | `sendAllRespondedEmail()` and `sendTimeConfirmedEmail()` — shared Resend wrappers |
+| `src/emails/all-responded-email.tsx` | React Email template for creator notification |
+| `src/emails/time-confirmed-email.tsx` | React Email template for participant notification |
+| `src/app/api/events/[id]/calendar.ics/route.ts` | .ics download Route Handler |
+| `src/components/calendar-export.tsx` | Client component: .ics download button + Google Calendar link |
+
+---
+
+## Build Order
+
+Dependencies flow downward — each item can only be built once items above it are complete.
+
+```
+1. Schema migration
+   └── Add creatorEmail + allRespondedAt to events table
+       (participants.email already exists — no change)
+
+2. Email templates (no deps — pure React components)
+   ├── src/emails/all-responded-email.tsx
+   └── src/emails/time-confirmed-email.tsx
+
+3. Notification helpers (depends on: email templates)
+   └── src/lib/notifications.ts
+       sendAllRespondedEmail(), sendTimeConfirmedEmail()
+
+4. Email collection — backend (depends on: schema migration)
+   ├── src/lib/validations.ts — add creatorEmail to createEventSchema
+   ├── POST /api/events — accept + store creatorEmail
+   └── POST /api/participants/join — accept + store participant email
+
+5. "All responded" trigger (depends on: schema migration + notification helpers)
+   └── POST /api/availability — all-responded check after submittedAt update
+
+6. Confirmed-time trigger (depends on: notification helpers)
+   └── src/lib/actions/confirm-time.ts — send participant emails after confirm
+
+7. .ics Route Handler (no auth deps — public endpoint)
+   └── GET /api/events/[id]/calendar.ics
+
+8. UI changes (depends on: backend changes above)
+   ├── src/components/create-event-form.tsx — optional creatorEmail field
+   ├── src/components/identity/pin-sheet.tsx — optional email field post-PIN-setup
+   └── src/components/calendar-export.tsx — .ics + Google Calendar links
+
+9. Wire calendar export into event page (depends on: CalendarExport component)
+   └── src/app/e/[id]/page.tsx — render CalendarExport when status='confirmed'
+```
+
+---
+
+## Anti-Patterns
+
+### Anti-Pattern 1: Using Redis for the "All Responded" Idempotency Key
+
+**What people do:** Store a Redis key like `timely:all-responded:{eventId}` to track whether the notification was sent.
+
+**Why it's wrong:** Redis keys have TTLs and can be evicted. If the key expires and a participant later edits their availability, the notification fires a second time. The event's `allRespondedAt` column in Postgres persists for the full lifetime of the event with no eviction risk.
+
+**Do this instead:** DB column `allRespondedAt timestamp` on the events table. Null = not yet sent. Stamped once, never cleared.
+
+### Anti-Pattern 2: Awaiting Email Sends in the Critical Path
+
+**What people do:** `await sendAllRespondedEmail(...)` inside `POST /api/availability`, making the client wait for Resend's HTTP round-trip before receiving `{ success: true }`.
+
+**Why it's wrong:** Resend's API call adds 200-500ms latency to every successful save. If Resend is down, availability saves appear to fail from the user's perspective. The email is not part of the core transaction — the slot save should not be held hostage to it.
+
+**Do this instead:** Fire-and-forget with `.catch()` for server-side logging. `sendEmail(...).catch(err => console.error(err))` — the save succeeds regardless.
+
+### Anti-Pattern 3: Generating .ics in a Server Action
+
+**What people do:** Use a Server Action to generate .ics content and return it as a data URL or blob URL from the client.
+
+**Why it's wrong:** Server Actions cannot set response headers. The `Content-Type: text/calendar` and `Content-Disposition: attachment` headers are required for the browser to treat the response as a file download rather than navigation.
+
+**Do this instead:** Route Handler at `/api/events/[id]/calendar.ics`. The browser navigates to this URL directly (anchor `href`), which triggers the download via the response headers.
+
+### Anti-Pattern 4: Blocking the Confirm Action on Email Delivery
+
+**What people do:** Await all participant email sends before returning from `confirmTime`, so the creator sees an error if any email fails.
+
+**Why it's wrong:** If participant B provided an invalid email address, the creator's confirm action appears to fail — even though the event was confirmed. Participant notification failure should never roll back a confirmed event.
+
+**Do this instead:** Fire-and-forget the `Promise.all(sends)`. Log failures. The event is confirmed whether emails deliver or not.
+
+### Anti-Pattern 5: Collecting Participant Email in a Separate API Call Post-Join
+
+**What people do:** Create a second endpoint (e.g., `POST /api/participants/email`) and call it after the join flow completes.
+
+**Why it's wrong:** Adds a second network round-trip and a second point of failure. The email field is already in the `participants` table and the join endpoint already creates the row.
+
+**Do this instead:** Add `email?: string` to the existing `/api/participants/join` POST body schema. The email is stored in the same DB write that creates the participant.
+
+---
+
+## Integration Points
+
+### External Services
+
+| Service | Integration Pattern | Notes |
+|---------|---------------------|-------|
+| Resend | `new Resend(process.env.RESEND_API_KEY).emails.send(...)` | Already wired; reuse same pattern. From address must match verified domain. |
+| Neon Postgres | Drizzle ORM via `@neondatabase/serverless` HTTP driver | No changes to DB connection. `db.batch()` for atomic multi-step writes. |
+| Vercel Cron | `/api/cron/expire-events` runs daily at 3 AM UTC | No change needed — expired events are cleaned up before notification data matters. |
+
+### Internal Boundaries
+
+| Boundary | Communication | Notes |
+|----------|---------------|-------|
+| `availability/route.ts` → `notifications.ts` | Direct import, async call | Fire-and-forget; no return value needed |
+| `confirm-time.ts` (Server Action) → `notifications.ts` | Direct import, async call | Fire-and-forget; revalidatePath still runs |
+| `calendar-export.tsx` → `/api/events/[id]/calendar.ics` | Browser anchor href navigation | No JS fetch needed; browser handles download |
+| `e/[id]/page.tsx` → `CalendarExport` | Server Component → Client Component props | Pass `confirmedSlot` (string) and `eventTitle` as props |
+
+---
+
+## Scaling Considerations
+
+| Scale | Architecture Adjustments |
+|-------|--------------------------|
+| 0-1k events | Current architecture handles everything. Fire-and-forget email is fine. |
+| 1k-100k events | Email volume becomes a concern; batch sends if Resend rate limits apply. Still no background queue needed. |
+| 100k+ events | Consider Vercel Background Functions or a job queue (e.g., Trigger.dev) to decouple email from the request path. |
+
+### Scaling Priorities
+
+1. **First bottleneck:** Resend rate limits if many events confirm simultaneously. Mitigation: use Resend's batch email API (`resend.batch.send([...])`) once it's needed.
+2. **Second bottleneck:** The all-responded count query runs on every availability save. At high volume, add a partial index on `participants(eventId) WHERE submittedAt IS NULL`.
 
 ---
 
 ## Sources
 
-- tRPC vs REST for Next.js: [Stop building REST APIs for Next.js apps](https://brockherion.dev/blog/posts/stop-building-rest-apis-for-your-next-apps/) (MEDIUM confidence — single post)
-- Next.js Server Actions vs Route Handlers: [Vercel official blog](https://nextjs.org/blog/building-apis-with-nextjs) (HIGH confidence — official)
-- Server Actions vs Route Handlers patterns: [makerkit.dev](https://makerkit.dev/blog/tutorials/server-actions-vs-route-handlers) (MEDIUM confidence)
-- Argon2 vs bcrypt for low-entropy credentials: [Argon2 brute force analysis — identeco.de](https://identeco.de/en/blog/password-hashing-and-brute-force-attacks-on-argon2/) (HIGH confidence — technical analysis)
-- OWASP Argon2 parameters: [Argon2 vs bcrypt guide — guptadeepak.com](https://guptadeepak.com/the-complete-guide-to-password-hashing-argon2-vs-bcrypt-vs-scrypt-vs-pbkdf2-2026/) (HIGH confidence — aligns with OWASP guidance)
-- Magic link token lifecycle: [Clerk — Secure Auth with Magic Links](https://clerk.com/blog/secure-authentication-nextjs-email-magic-links) (HIGH confidence)
-- nanoid / cuid2 collision resistance: [nanoid GitHub](https://github.com/ai/nanoid), [cuid2 GitHub](https://github.com/paralleldrive/cuid2) (HIGH confidence — official repos)
-- Timezone handling in JavaScript: [Nylas timezone guide](https://www.nylas.com/blog/how-to-handle-timezones-with-javascript-dev/) (MEDIUM confidence)
-- Prisma vs Drizzle 2025: [bytebase.com comparison](https://www.bytebase.com/blog/drizzle-vs-prisma/) (MEDIUM confidence — third party)
-- Rate limiting in Next.js: [peerlist.io rate limiting guide](https://peerlist.io/blog/engineering/how-to-implement-rate-limiting-in-nextjs) (MEDIUM confidence)
-- Mobile-first Next.js patterns: [clouddevs.com mobile optimization guide](https://clouddevs.com/next/optimizing-for-mobile-devices/) (MEDIUM confidence)
+- Direct codebase inspection of v1.0 shipped code (HIGH confidence)
+- Resend documentation for batch sends: https://resend.com/docs/api-reference/emails/send-batch-emails (MEDIUM confidence — verified pattern exists)
+- `ics` npm package README: https://github.com/adamgibbons/ics (HIGH confidence — established package, RFC 5545 compliant)
+- Google Calendar URL scheme: https://github.com/InteractionDesignFoundation/add-event-to-calendar-docs/blob/main/services/google.md (MEDIUM confidence — community-maintained, widely used)
+- RFC 5545 iCalendar format: https://tools.ietf.org/html/rfc5545 (HIGH confidence — official standard)
+- Next.js Route Handler response headers: https://nextjs.org/docs/app/api-reference/file-conventions/route (HIGH confidence — official docs)
+
+---
+*Architecture research for: Timely v1.1 — Email Notifications & Calendar Export*
+*Researched: 2026-02-28*
