@@ -8,9 +8,9 @@
 
 **Core value:** Finding a time that works for everyone should feel effortless — share a link, mark your times, see the overlap.
 
-**Current focus:** Planning next milestone (v1.1)
+**Current focus:** v1.1 Notifications & Export
 
-**Milestone:** v1.0 — SHIPPED 2026-02-28 → https://timely-cyan-three.vercel.app
+**Milestone:** v1.1 — Notifications & Export (in planning)
 
 **Stack:** Next.js 16 (App Router) + Neon Postgres + Drizzle ORM + Vercel + Resend + Tailwind v4 + shadcn/ui + Zustand (grid only) + Upstash Redis (rate limiting)
 
@@ -20,11 +20,11 @@
 
 | Field | Value |
 |-------|-------|
-| Milestone | v1.0.0 |
-| Phase | 5 — Polish and Launch Readiness |
-| Plan | 05-06 complete — final verification; SECR-04 confirmed; iOS Safari smoke test deferred to Vercel deploy |
-| Status | **Deployed** — https://timely-cyan-three.vercel.app |
-| Blocking issues | **Resend from-address:** Magic link emails sent from `noreply@timely.app` — Resend free tier only delivers to verified email (`atunguye25@gmail.com`) until domain is verified. To send to real users: either verify a domain at resend.com/domains, or change `from:` in `src/app/api/participants/magic-link/request/route.ts` to `onboarding@resend.dev` for zero-config testing. iOS Safari smoke test still pending (requires real device on live URL). |
+| Milestone | v1.1 — Notifications & Export |
+| Phase | Not started (defining requirements) |
+| Plan | — |
+| Status | Defining requirements |
+| Last activity | 2026-02-28 — Milestone v1.1 started |
 
 **Progress:**
 [██████████] 100%

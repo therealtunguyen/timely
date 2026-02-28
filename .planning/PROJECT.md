@@ -8,6 +8,16 @@ A mobile-first web app that helps small groups (4-10 people) find a meeting time
 
 Finding a time that works for everyone should feel effortless — share a link, mark your times, see the overlap.
 
+## Current Milestone: v1.1 Notifications & Export
+
+**Goal:** Close the loop after scheduling — notify participants and make it easy to add the confirmed time to a calendar.
+
+**Target features:**
+- Optional email collection at event creation (creator) and participant join
+- Creator email notification when all participants have submitted availability
+- Participant email notifications when creator confirms a time
+- .ics download and Google Calendar link on confirmed event page
+
 ## Requirements
 
 ### Validated
@@ -26,10 +36,12 @@ Finding a time that works for everyone should feel effortless — share a link, 
 
 ### Active
 
-- [ ] Creator receives email when all participants have responded
-- [ ] Participants receive email when a final time is confirmed
-- [ ] Confirmed time can be exported as .ics / Google Calendar add link
-- [ ] Resend domain verified so magic links reach any email (currently only verified address)
+- [ ] Creator can optionally provide their email when creating an event
+- [ ] Participant can optionally provide their email when joining an event
+- [ ] Creator receives email when all current participants have submitted their availability
+- [ ] Participants with an email on file receive a notification when the creator confirms a time
+- [ ] User can download a .ics calendar file for a confirmed event
+- [ ] User can add a confirmed event to Google Calendar via a one-click link
 
 ### Out of Scope
 
@@ -55,6 +67,7 @@ Finding a time that works for everyone should feel effortless — share a link, 
 - **Platform**: Mobile-first responsive web app — no app store distribution
 - **Identity model**: Name + PIN per event, magic link fallback — no traditional auth
 - **Aesthetic**: Minimal and warm — whitespace, soft colors, calm feel
+- **Email delivery**: Resend domain must be verified at resend.com/domains before notifications reach non-owner addresses
 
 ## Key Decisions
 
@@ -74,4 +87,4 @@ Finding a time that works for everyone should feel effortless — share a link, 
 | SECR-03 expiry: 30 days from creation | Approximation of "30 days after last candidate date" | ✓ Resolved — updated from 37 days to exact 30 days |
 
 ---
-*Last updated: 2026-02-28 after v1.0 milestone*
+*Last updated: 2026-02-28 after v1.1 milestone start*
