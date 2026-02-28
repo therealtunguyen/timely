@@ -63,10 +63,10 @@ export async function POST(req: NextRequest) {
     timezone,
   } = parsed.data
 
-  // 4. Generate ID, creator token, and compute expiry (30 days after last candidate date, approximated at creation)
+  // 4. Generate ID, creator token, and compute expiry (30 days from creation)
   const id = generateId()
   const creatorToken = generateId()
-  const expiresAt = addDays(new Date(), 37)  // 30-day window + 7-day buffer
+  const expiresAt = addDays(new Date(), 30)
 
   // 5. Insert event row
   await db.insert(events).values({
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 24 * 37,  // 37 days — matches event expiry
+    maxAge: 60 * 60 * 24 * 30,  // 30 days — matches event expiry
   })
   return response
 }
