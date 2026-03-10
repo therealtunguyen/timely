@@ -20,19 +20,19 @@ export function MagicLinkEmail({ eventTitle, magicUrl, participantName }: MagicL
     <Html>
       <Head />
       <Preview>Your access link for {eventTitle}</Preview>
-      <Body style={{ backgroundColor: '#FAF8F5', fontFamily: 'Inter, sans-serif' }}>
+      <Body style={{ backgroundColor: '#f8fafc', fontFamily: 'Inter, sans-serif' }}>
         <Container style={{ maxWidth: '480px', margin: '40px auto', padding: '24px' }}>
-          <Text style={{ fontSize: '20px', fontWeight: '600', color: '#1C1A17' }}>
+          <Text style={{ fontSize: '20px', fontWeight: '600', color: '#0f172a' }}>
             Hi {participantName},
           </Text>
-          <Text style={{ color: '#6B6158', lineHeight: '1.6' }}>
+          <Text style={{ color: '#64748b', lineHeight: '1.6' }}>
             Here&apos;s your access link for <strong>{eventTitle}</strong>. It expires in 30 minutes and can only be used once.
           </Text>
           <Section style={{ textAlign: 'center', margin: '32px 0' }}>
             <Button
               href={magicUrl}
               style={{
-                backgroundColor: '#E8823A',
+                backgroundColor: '#6868ed',
                 color: '#ffffff',
                 padding: '12px 24px',
                 borderRadius: '8px',
