@@ -19,11 +19,21 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: {
     default: "Timely — Find a time that works for everyone",
     template: "%s | Timely",
   },
   description: "Share a link, mark your times, see the overlap.",
+  openGraph: {
+    title: "Timely — Find a time that works for everyone",
+    description: "Share a link, mark your times, see the overlap.",
+    type: "website",
+    siteName: "Timely",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({

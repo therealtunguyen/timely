@@ -1,22 +1,10 @@
 import { ImageResponse } from 'next/og'
-import { db } from '@/lib/db'
-import { events } from '@/lib/schema'
-import { eq } from 'drizzle-orm'
 
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
-export const runtime = 'edge'  // OG image generation runs at the edge
+export const runtime = 'edge'
 
-export default async function Image({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params  // Next.js 15+: must await params
-
-  const event = await db.query.events.findFirst({
-    where: eq(events.id, id),
-  })
-
-  const title = event?.title ?? 'Timely Event'
-  const description = event?.description ?? 'Mark your availability'
-
+export default function Image() {
   return new ImageResponse(
     (
       <div
@@ -51,7 +39,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           </span>
         </div>
 
-        {/* Middle: Event details */}
+        {/* Middle: Headline */}
         <div
           style={{
             display: 'flex',
@@ -63,33 +51,26 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         >
           <div
             style={{
-              fontSize: 56,
+              fontSize: 64,
               fontWeight: 700,
               color: '#0f172a',
               lineHeight: 1.1,
               letterSpacing: '-0.02em',
               maxWidth: '900px',
-              // Truncate very long titles
-              overflow: 'hidden',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
             }}
           >
-            {title}
+            Find a time that works for everyone
           </div>
-          {description && (
-            <div
-              style={{
-                fontSize: 28,
-                color: '#64748b',
-                lineHeight: 1.4,
-                maxWidth: '800px',
-              }}
-            >
-              {description}
-            </div>
-          )}
+          <div
+            style={{
+              fontSize: 28,
+              color: '#64748b',
+              lineHeight: 1.4,
+              maxWidth: '800px',
+            }}
+          >
+            Share a link, mark your times, see the overlap.
+          </div>
         </div>
 
         {/* Bottom: CTA */}
@@ -110,16 +91,11 @@ export default async function Image({ params }: { params: Promise<{ id: string }
               borderRadius: '10px',
             }}
           >
-            Mark your availability
+            Create a free event
           </div>
         </div>
       </div>
     ),
-    {
-      ...size,
-      // Note: custom fonts not loaded here — system fonts used.
-      // For Inter font in OG images, fetch from Google Fonts or use a local font file.
-      // Keeping simple for Phase 1; can enhance in Phase 5.
-    }
+    { ...size }
   )
 }
